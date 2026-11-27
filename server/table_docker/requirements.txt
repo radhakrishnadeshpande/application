@@ -1,0 +1,6 @@
+ohmytable
+fastapi
+uvicorn
+python-multipart
+opencv-python-headless
+numpy

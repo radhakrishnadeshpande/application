@@ -1,0 +1,1059 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>OCR</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;700&family=Noto+Sans+Devanagari:wght@400;700&family=Noto+Sans+Telugu:wght@400;700&family=Noto+Sans+Malayalam:wght@400;700&family=Noto+Sans+Gujarati:wght@400;700&family=Caveat:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f3f5f9;--panel:#ffffff;--panel2:#f7f8fb;--text:#1b2130;--muted:#6b7280;
+  --accent:#3b6fd8;--accent-2:#2a56b0;--border:#e1e5ee;--err:#d64545;--ok:#1f9d55;--warn:#c98a00;
+  --shadow:0 1px 2px rgba(16,24,40,.06),0 1px 3px rgba(16,24,40,.08);--radius:12px;
+  --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+}
+:root[data-theme="dark"]{
+  --bg:#0e1116;--panel:#161a21;--panel2:#1c2230;--text:#e6e9f0;--muted:#97a0b1;
+  --accent:#6b9cff;--accent-2:#8ab3ff;--border:#272e3b;--err:#ff7b7b;--ok:#4ade80;--warn:#f5c04f;
+  --shadow:none;color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;font-family:"Noto Sans",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--text);font-size:14px}
+button,select,input{font:inherit}
+.hidden{display:none !important}
+.muted{color:var(--muted)}
+.small{font-size:12px}
+
+/* Top bar */
+.topbar{height:56px;display:flex;align-items:center;justify-content:space-between;padding:0 18px;background:var(--panel);border-bottom:1px solid var(--border)}
+.brand{display:flex;align-items:center;gap:10px}
+.logo{display:grid;place-items:center;width:30px;height:30px;border-radius:8px;background:var(--accent);color:#fff;font-weight:700;font-size:14px}
+.brand h1{margin:0;font-size:17px;font-weight:700;letter-spacing:.3px}
+.top-actions{display:flex;align-items:center;gap:8px}
+.chip{font-size:12px;padding:4px 10px;border-radius:999px;background:var(--panel2);border:1px solid var(--border);color:var(--muted)}
+.chip.busy{color:var(--warn)}
+.chip.err{color:var(--err)}
+.chip.ok{color:var(--ok)}
+
+/* Layout */
+.app{display:grid;grid-template-columns:310px minmax(0,1fr) minmax(0,1fr);gap:12px;padding:12px;height:calc(100vh - 56px)}
+.app.no-viewer{grid-template-columns:310px minmax(0,1fr)}
+.app.no-viewer .viewer{display:none}
+.panel{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);display:flex;flex-direction:column;min-height:0;overflow:hidden}
+@media (max-width:1150px){
+  .app,.app.no-viewer{grid-template-columns:1fr;height:auto}
+  .panel{min-height:420px}
+  .viewer{min-height:520px}
+}
+
+/* Controls */
+button{cursor:pointer;border:1px solid var(--border);background:var(--panel);color:var(--text);padding:7px 11px;border-radius:8px;font-weight:500;transition:background .15s,border-color .15s}
+button:hover:not(:disabled){border-color:var(--accent)}
+button:disabled{opacity:.45;cursor:not-allowed}
+button.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+button.primary:hover:not(:disabled){background:var(--accent-2)}
+button.danger{color:var(--err)}
+button.ghost{background:transparent}
+button.icon{min-width:34px;padding:6px 8px;font-size:15px;line-height:1}
+select{width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:8px;background:var(--panel2);color:var(--text)}
+label.field{display:block;font-size:11px;color:var(--muted);margin:10px 0 4px;text-transform:uppercase;letter-spacing:.5px}
+.check{display:flex;align-items:center;gap:8px;margin:7px 0;font-size:13px;cursor:pointer}
+.check input{accent-color:var(--accent);width:15px;height:15px}
+.group{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.toolbar{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;padding:10px 12px;border-bottom:1px solid var(--border);background:var(--panel2)}
+.zoom-label{min-width:54px;text-align:center;font-variant-numeric:tabular-nums;font-size:13px;color:var(--muted)}
+
+/* Sidebar */
+.sidebar{padding:14px;overflow:auto}
+.sidebar h2{font-size:11px;text-transform:uppercase;letter-spacing:.6px;color:var(--muted);margin:18px 0 4px;font-weight:700}
+.sidebar h2:first-child{margin-top:0}
+.samples{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:6px}
+.sample{padding:6px;border:1px solid var(--border);border-radius:10px;background:var(--panel);text-align:left;display:flex;flex-direction:column;gap:5px}
+.sample img{width:100%;aspect-ratio:1/1.41;object-fit:cover;object-position:top;border-radius:6px;border:1px solid var(--border);background:#fff}
+.sample .cap{font-size:12px;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sample.loading img{opacity:.35}
+.dropzone{margin-top:6px;border:2px dashed var(--border);border-radius:12px;padding:18px 12px;text-align:center;color:var(--muted);cursor:pointer;transition:all .15s;background:var(--panel2)}
+.dropzone.over{border-color:var(--accent);color:var(--accent);background:var(--panel)}
+.dropzone strong{display:block;color:var(--text);font-size:14px;margin-bottom:4px}
+.page-list{list-style:none;margin:10px 0 0;padding:0;display:flex;flex-direction:column;gap:6px;max-height:240px;overflow:auto}
+.page-item{display:flex;gap:10px;align-items:center;padding:6px;border:1px solid var(--border);border-radius:10px;cursor:pointer;background:var(--panel)}
+.page-item:hover{border-color:var(--accent)}
+.page-item.active{border-color:var(--accent);box-shadow:0 0 0 2px color-mix(in srgb,var(--accent) 25%,transparent)}
+.page-item img{width:40px;height:52px;object-fit:cover;border-radius:6px;border:1px solid var(--border);flex:none;background:#fff}
+.page-item .info{min-width:0;flex:1}
+.page-item .name{font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.badge{display:inline-block;margin-top:4px;font-size:11px;padding:2px 7px;border-radius:999px;background:var(--panel2);color:var(--muted);border:1px solid var(--border)}
+.badge.running{color:var(--warn)}
+.badge.done{color:var(--ok)}
+.badge.error{color:var(--err)}
+.btn-col{display:flex;flex-direction:column;gap:8px;margin-top:14px}
+.progress{height:6px;background:var(--panel2);border-radius:999px;overflow:hidden;margin-top:12px;border:1px solid var(--border)}
+#progressBar{height:100%;width:0;background:linear-gradient(90deg,var(--accent),var(--accent-2));transition:width .25s}
+#progressText{margin-top:6px;min-height:16px}
+
+/* Viewer */
+.viewer{position:relative}
+.viewer-body{position:relative;flex:1;min-height:0;overflow:hidden;cursor:grab;user-select:none;touch-action:none;
+  background-color:var(--panel2);
+  background-image:linear-gradient(45deg,var(--border) 25%,transparent 25%),linear-gradient(-45deg,var(--border) 25%,transparent 25%),linear-gradient(45deg,transparent 75%,var(--border) 75%),linear-gradient(-45deg,transparent 75%,var(--border) 75%);
+  background-size:20px 20px;background-position:0 0,0 10px,10px -10px,-10px 0}
+.viewer-body.dragging{cursor:grabbing}
+.stage{position:absolute;left:50%;top:50%;transform-origin:50% 50%;will-change:transform}
+#viewImg{display:block;max-width:none;pointer-events:none;box-shadow:0 8px 30px rgba(0,0,0,.25);background:#fff}
+.empty{position:absolute;inset:0;display:grid;place-items:center;color:var(--muted);text-align:center;padding:20px;pointer-events:none}
+.ghost-link{font-size:13px;color:var(--accent);text-decoration:none;padding:7px 10px;border-radius:8px}
+.ghost-link:hover{background:var(--panel)}
+.viewer-hint{position:absolute;left:12px;bottom:10px;font-size:11px;color:var(--muted);background:var(--panel);border:1px solid var(--border);border-radius:8px;padding:4px 8px;pointer-events:none;opacity:.9}
+
+/* Output */
+.output{min-width:0}
+.tabs{display:flex;gap:4px;background:var(--panel);padding:3px;border-radius:9px;border:1px solid var(--border)}
+.tab{border:0;background:transparent;padding:6px 12px;border-radius:7px;color:var(--muted)}
+.tab.on{background:var(--accent);color:#fff}
+.output-body{flex:1;min-height:0;overflow:hidden;display:flex;flex-direction:column}
+#previewPane{flex:1;overflow:auto;padding:22px 26px;line-height:1.7;font-size:15px}
+.md-preview h1,.md-preview h2,.md-preview h3{line-height:1.3;margin:1.1em 0 .5em}
+.md-preview h1{font-size:1.6em}.md-preview h2{font-size:1.3em}.md-preview h3{font-size:1.1em}
+.md-preview p{margin:.6em 0}
+.md-preview hr{border:0;border-top:1px solid var(--border);margin:1.4em 0}
+.md-preview table{border-collapse:collapse;margin:12px 0;width:100%}
+.md-preview th,.md-preview td{border:1px solid var(--border);padding:6px 9px;text-align:left}
+.md-preview code{font-family:var(--mono);background:var(--panel2);padding:1px 5px;border-radius:5px;font-size:.9em}
+.md-preview blockquote{margin:.8em 0;padding:.2em 1em;border-left:3px solid var(--accent);color:var(--muted)}
+#mdText{flex:1;min-height:0;width:100%;border:0;outline:0;resize:none;padding:18px 20px;background:var(--panel);color:var(--text);font-family:var(--mono);font-size:13px;line-height:1.6}
+#rawPane{flex:1;margin:0;overflow:auto;padding:16px 20px;font-family:var(--mono);font-size:12px;background:var(--panel);color:var(--text);white-space:pre-wrap;word-break:break-word}
+.statusbar{display:flex;gap:16px;flex-wrap:wrap;padding:8px 14px;border-top:1px solid var(--border);background:var(--panel2);font-size:12px;color:var(--muted)}
+
+/* Toasts */
+.toast-host{position:fixed;left:50%;bottom:18px;transform:translateX(-50%);display:flex;flex-direction:column;gap:8px;z-index:50;align-items:center;pointer-events:none}
+.toast{background:var(--text);color:var(--panel);padding:9px 14px;border-radius:9px;font-size:13px;box-shadow:0 6px 24px rgba(0,0,0,.25);max-width:min(560px,90vw);animation:pop .2s ease-out}
+.toast.err{background:var(--err);color:#fff}
+@keyframes pop{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand">
+    <span class="logo">O</span>
+    <h1>OCR</h1>
+  </div>
+  <div class="top-actions">
+    <span id="apiChip" class="chip">Ready</span>
+    <button id="toggleViewer" class="ghost">Hide viewer</button>
+    <button id="themeBtn" class="ghost">Theme</button>
+  </div>
+</header>
+
+<div id="app" class="app">
+
+  <!-- Sidebar -->
+  <aside class="panel sidebar">
+    <h2>Recognition</h2>
+    <label class="field" for="modality">Modality</label>
+    <select id="modality">
+      <option value="printed">Printed</option>
+      <option value="handwritten">Handwritten</option>
+    </select>
+
+    <label class="field" for="language">Language</label>
+    <select id="language">
+      <option value="en">English</option>
+      <option value="hi" selected>Hindi</option>
+      <option value="te">Telugu</option>
+      <option value="ml">Malayalam</option>
+      <option value="gu">Gujarati</option>
+      <option value="mr">Marathi</option>
+    </select>
+
+    <h2>Output options</h2>
+    <label class="check"><input type="checkbox" id="optHeadings" checked> Page headings for multi-page documents</label>
+    <label class="check"><input type="checkbox" id="optRules" checked> Horizontal rule between pages</label>
+    <label class="check"><input type="checkbox" id="optCollapse" checked> Collapse extra blank lines</label>
+    <label class="check"><input type="checkbox" id="optAuto"> Convert automatically on upload</label>
+
+    <h2>Sample documents</h2>
+    <div id="samples" class="samples"></div>
+
+    <h2>Your documents</h2>
+    <div id="dropzone" class="dropzone">
+      <strong>Drop images or PDFs here</strong>
+      or click to choose files
+    </div>
+    <input type="file" id="fileInput" accept="application/pdf,image/*" multiple hidden>
+    <ul id="pageList" class="page-list"></ul>
+
+    <div class="btn-col">
+      <button id="convertCurrent" class="primary" disabled>Convert current page (Ctrl+Enter)</button>
+      <button id="convertAll" class="primary" disabled>Convert all pages</button>
+      <button id="convertTable" class="primary" disabled>Extract table from current page</button>
+      <button id="cancelBtn" class="danger" disabled>Cancel</button>
+      <button id="clearPages" class="ghost" disabled>Remove all documents</button>
+    </div>
+
+    <div id="progress" class="progress hidden"><div id="progressBar"></div></div>
+    <div id="progressText" class="muted small"></div>
+  </aside>
+
+  <!-- Viewer -->
+  <section class="panel viewer">
+    <div class="toolbar">
+      <div class="group">
+        <button id="zoomOut" class="icon" title="Zoom out (-)">−</button>
+        <span id="zoomLabel" class="zoom-label">100%</span>
+        <button id="zoomIn" class="icon" title="Zoom in (+)">+</button>
+      </div>
+      <div class="group">
+        <button id="zoomFit" title="Fit to view (0)">Fit</button>
+        <button id="zoomActual" title="Actual size (1)">100%</button>
+      </div>
+      <div class="group">
+        <button id="rotL" class="icon" title="Rotate left (Shift+R)">↺</button>
+        <button id="rotR" class="icon" title="Rotate right (R)">↻</button>
+      </div>
+      <div class="group">
+        <button id="prevPage" class="icon" title="Previous page (←)">‹</button>
+        <span id="pageLabel" class="zoom-label">–</span>
+        <button id="nextPage" class="icon" title="Next page (→)">›</button>
+      </div>
+      <a id="downloadImg" class="ghost-link hidden" title="Save this page as an image">Save image</a>
+    </div>
+    <div id="viewerBody" class="viewer-body">
+      <div id="stage" class="stage"><img id="viewImg" alt="Document preview" draggable="false"></div>
+      <div id="emptyState" class="empty">
+        <div>
+          <div style="font-size:15px;color:var(--text);margin-bottom:6px">No document loaded</div>
+          Pick a sample or upload a file to preview it here.
+        </div>
+      </div>
+      <div class="viewer-hint">Scroll to zoom · Drag to pan · Double-click to toggle fit</div>
+    </div>
+  </section>
+
+  <!-- Output -->
+  <section class="panel output">
+    <div class="toolbar">
+      <div class="tabs">
+        <button class="tab on" data-tab="preview">Preview</button>
+        <button class="tab" data-tab="markdown">Markdown</button>
+        <button class="tab" data-tab="raw">Raw JSON</button>
+      </div>
+      <div class="group">
+        <button id="copyBtn" title="Copy Markdown to clipboard">Copy</button>
+        <button id="dlMd" title="Download .md (Ctrl+S)">.md</button>
+        <button id="dlTxt" title="Download plain text">.txt</button>
+        <button id="clearOut" class="ghost danger" title="Clear all converted output">Clear</button>
+      </div>
+    </div>
+    <div class="output-body">
+      <article id="previewPane" class="md-preview"></article>
+      <textarea id="mdText" class="hidden" spellcheck="false" placeholder="Converted text appears here. You can edit it."></textarea>
+      <pre id="rawPane" class="hidden"></pre>
+    </div>
+    <div class="statusbar">
+      <span id="statWords">0 words</span>
+      <span id="statChars">0 characters</span>
+      <span id="statPages">0 of 0 pages converted</span>
+    </div>
+  </section>
+</div>
+
+<div id="toastHost" class="toast-host"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.2/marked.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.8/purify.min.js"></script>
+<script>
+// ============================================================
+// Configuration
+// ============================================================
+const CONFIG = {
+  // Text OCR (printed + handwritten). Use the Render proxy URL, or
+  // "https://ilocr.iiit.ac.in/ocr/infer" if CORS is enabled on that server.
+  apiUrl: "https://application-61e0.onrender.com/ocr/infer",
+  // Table extraction. Use the Render proxy URL, or
+  // "https://ilocr.iiit.ac.in/layout/table" if CORS is enabled on the layout server.
+  tableUrl: "https://application-61e0.onrender.com/layout/table",
+  // Model versions
+  printedVersion: "shashiocr",
+  handwrittenVersion: "V-01.11.00.00",
+  apiKey: "",
+  pdfScale: 2,
+  maxPdfPages: 200,
+  // Optional: add real sample files you host alongside index.html (e.g. in a "samples" folder).
+  // Example:
+  // extraSamples: [
+  //   { label: "Invoice (Hindi)", url: "samples/invoice-hi.jpg", modality: "printed", lang: "hi" }
+  // ]
+  extraSamples: []
+};
+
+const ZOOM_MIN = 0.05, ZOOM_MAX = 10;
+
+// Printed text -> shashiocr, handwritten text -> V-01.11.00.00
+function versionFor(modality, language) {
+  return modality === "handwritten" ? CONFIG.handwrittenVersion : CONFIG.printedVersion;
+}
+
+// The handwritten model has no English
+function checkSupported(modality, language) {
+  if (modality === "handwritten" && language === "en") {
+    throw new Error("Handwritten OCR is not available for English. Choose Printed or another language.");
+  }
+}
+
+pdfjsLib.GlobalWorkerOptions.workerSrc =
+  "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+marked.setOptions({ breaks: true, gfm: true });
+
+// ============================================================
+// Built-in sample documents (generated in the browser)
+// ============================================================
+const LANG_NAME = { en: "English", hi: "Hindi", te: "Telugu", ml: "Malayalam", gu: "Gujarati", mr: "Marathi" };
+const FONT = {
+  en: '"Noto Sans"', hi: '"Noto Sans Devanagari"', mr: '"Noto Sans Devanagari"',
+  te: '"Noto Sans Telugu"', ml: '"Noto Sans Malayalam"', gu: '"Noto Sans Gujarati"'
+};
+const SAMPLE_TEXT = {
+  en: "Invoice No. 2026-0147 dated 12 November 2026. Items: 3 notebooks at Rs 250 each and 2 pens at Rs 40 each. Total amount: Rs 830. The quick brown fox jumps over the lazy dog.",
+  hi: "भारत एक विशाल और विविधतापूर्ण देश है। यहाँ अनेक भाषाएँ बोली जाती हैं, जिनमें हिंदी सबसे अधिक प्रचलित है। यह नमूना दस्तावेज़ ओसीआर परीक्षण के लिए बनाया गया है।",
+  te: "తెలుగు ద్రావిడ భాషా కుటుంబానికి చెందిన ఒక ప్రధాన భాష. ఇది ఆంధ్రప్రదేశ్ మరియు తెలంగాణ రాష్ట్రాల ప్రధాన భాష. ఈ నమూనా పత్రం OCR పరీక్ష కోసం రూపొందించబడింది.",
+  ml: "മലയാളം ദ്രാവിഡ ഭാഷാ കുടുംബത്തിൽപ്പെട്ട ഒരു പ്രധാന ഭാഷയാണ്. കേരളത്തിന്റെ ഔദ്യോഗിക ഭാഷയായ ഇത് ലക്ഷക്കണക്കിന് ആളുകൾ സംസാരിക്കുന്നു. ഈ മാതൃകാ രേഖ OCR പരിശോധനയ്ക്കായി തയ്യാറാക്കിയതാണ്.",
+  gu: "ગુજરાતી એ ભારતની એક મુખ્ય ભાષા છે. તે ગુજરાત રાજ્યની સત્તાવાર ભાષા છે. આ નમૂના દસ્તાવેજ OCR પરીક્ષણ માટે બનાવવામાં આવ્યો છે.",
+  mr: "मराठी ही महाराष्ट्राची राजभाषा आहे. ती इंडो-आर्यन भाषा कुटुंबातील एक प्रमुख भाषा आहे. हा नमुना दस्तऐवज OCR चाचणीसाठी तयार केला आहे."
+};
+
+// Generated samples. English handwritten is omitted because the server has no model for it.
+const GENERATED_SAMPLES = [
+  { lang: "en", modality: "printed" },
+  { lang: "hi", modality: "printed" },
+  { lang: "hi", modality: "handwritten" },
+  { lang: "te", modality: "printed" },
+  { lang: "te", modality: "handwritten" },
+  { lang: "ml", modality: "printed" },
+  { lang: "ml", modality: "handwritten" },
+  { lang: "gu", modality: "printed" },
+  { lang: "gu", modality: "handwritten" },
+  { lang: "mr", modality: "printed" },
+  { lang: "mr", modality: "handwritten" }
+].map(s => ({
+  ...s,
+  label: `${LANG_NAME[s.lang]} · ${s.modality === "printed" ? "Printed" : "Handwritten"}`,
+  generated: true
+}));
+
+function wrapLines(g, text, maxW) {
+  const words = text.split(/\s+/);
+  const lines = [];
+  let line = "";
+  for (const w of words) {
+    const t = line ? line + " " + w : w;
+    if (line && g.measureText(t).width > maxW) { lines.push(line); line = w; }
+    else line = t;
+  }
+  if (line) lines.push(line);
+  return lines;
+}
+
+async function renderSample(s) {
+  const W = 1240, H = 1754, M = 110;
+  const hand = s.modality === "handwritten";
+  const bodyFamily = hand && s.lang === "en" ? '"Caveat"' : FONT[s.lang];
+  const bodySize = hand ? 54 : 36;
+  const bodyFont = `${bodySize}px ${bodyFamily}`;
+  try {
+    await Promise.all([
+      document.fonts.load(`bold 50px ${FONT.en}`, "Sample"),
+      document.fonts.load(bodyFont, SAMPLE_TEXT[s.lang])
+    ]);
+  } catch (e) { /* fall back to system fonts */ }
+
+  const c = document.createElement("canvas");
+  c.width = W; c.height = H;
+  const g = c.getContext("2d");
+  g.fillStyle = "#fbfaf6";
+  g.fillRect(0, 0, W, H);
+
+  g.fillStyle = "#222";
+  g.font = `bold 50px ${FONT.en}`;
+  g.fillText(`${LANG_NAME[s.lang]} · ${hand ? "Handwritten" : "Printed"}`, M, 130);
+  g.fillStyle = "#888";
+  g.font = `26px ${FONT.en}`;
+  g.fillText("Sample document", M, 176);
+  g.strokeStyle = "#ddd";
+  g.lineWidth = 2;
+  g.beginPath(); g.moveTo(M, 200); g.lineTo(W - M, 200); g.stroke();
+
+  g.font = bodyFont;
+  g.fillStyle = hand ? "#1f3f9a" : "#111";
+  const lines = wrapLines(g, SAMPLE_TEXT[s.lang], W - 2 * M);
+  const lh = hand ? 92 : 62;
+  let y = 290;
+  for (const line of lines) {
+    g.save();
+    if (hand) {
+      const dx = (Math.random() - 0.5) * 10;
+      const dy = (Math.random() - 0.5) * 6;
+      const a = (Math.random() - 0.5) * 0.025;
+      g.translate(M + dx, y + dy);
+      g.rotate(a);
+      g.fillText(line, 0, 0);
+    } else {
+      g.fillText(line, M, y);
+    }
+    g.restore();
+    y += lh;
+  }
+  return c.toDataURL("image/jpeg", 0.92);
+}
+
+// ============================================================
+// Helpers and state
+// ============================================================
+const $ = s => document.querySelector(s);
+const els = {
+  app: $("#app"), modality: $("#modality"), language: $("#language"),
+  optHeadings: $("#optHeadings"), optRules: $("#optRules"),
+  optCollapse: $("#optCollapse"), optAuto: $("#optAuto"),
+  samples: $("#samples"),
+  dropzone: $("#dropzone"), fileInput: $("#fileInput"), pageList: $("#pageList"),
+  convertCurrent: $("#convertCurrent"), convertAll: $("#convertAll"), convertTable: $("#convertTable"),
+  cancelBtn: $("#cancelBtn"), clearPages: $("#clearPages"),
+  progress: $("#progress"), progressBar: $("#progressBar"), progressText: $("#progressText"),
+  apiChip: $("#apiChip"), toggleViewer: $("#toggleViewer"), themeBtn: $("#themeBtn"),
+  viewerBody: $("#viewerBody"), stage: $("#stage"), viewImg: $("#viewImg"), emptyState: $("#emptyState"),
+  zoomIn: $("#zoomIn"), zoomOut: $("#zoomOut"), zoomFit: $("#zoomFit"), zoomActual: $("#zoomActual"),
+  zoomLabel: $("#zoomLabel"), rotL: $("#rotL"), rotR: $("#rotR"),
+  prevPage: $("#prevPage"), nextPage: $("#nextPage"), pageLabel: $("#pageLabel"),
+  downloadImg: $("#downloadImg"),
+  previewPane: $("#previewPane"), mdText: $("#mdText"), rawPane: $("#rawPane"),
+  copyBtn: $("#copyBtn"), dlMd: $("#dlMd"), dlTxt: $("#dlTxt"), clearOut: $("#clearOut"),
+  statWords: $("#statWords"), statChars: $("#statChars"), statPages: $("#statPages"),
+  toastHost: $("#toastHost")
+};
+
+const state = {
+  pages: [],          // { name, src, base64, markdown, raw, status, error }
+  samples: [],        // sample definitions (with src once generated/loaded)
+  current: 0,
+  view: { s: 1, tx: 0, ty: 0, rot: 0 },
+  busy: false,
+  abort: null
+};
+
+const clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
+const range = (a, b) => Array.from({ length: b - a }, (_, k) => a + k);
+
+function toast(msg, isErr = false) {
+  const t = document.createElement("div");
+  t.className = "toast" + (isErr ? " err" : "");
+  t.textContent = msg;
+  els.toastHost.appendChild(t);
+  setTimeout(() => t.remove(), 4500);
+}
+
+function setProgress(done, total, text) {
+  els.progress.classList.remove("hidden");
+  els.progressBar.style.width = total ? (done / total) * 100 + "%" : "0%";
+  els.progressText.textContent = text || "";
+}
+function hideProgress() {
+  els.progress.classList.add("hidden");
+  els.progressBar.style.width = "0%";
+  els.progressText.textContent = "";
+}
+
+function setChip(text, cls = "") {
+  els.apiChip.textContent = text;
+  els.apiChip.className = "chip" + (cls ? " " + cls : "");
+}
+
+function setBusy(b) {
+  state.busy = b;
+  els.cancelBtn.disabled = !b;
+  setChip(b ? "Converting…" : "Ready", b ? "busy" : "");
+  updateButtons();
+}
+
+function updateButtons() {
+  const n = state.pages.length;
+  els.convertCurrent.disabled = state.busy || n === 0;
+  els.convertAll.disabled = state.busy || n === 0;
+  els.convertTable.disabled = state.busy || n === 0;
+  els.clearPages.disabled = state.busy || n === 0;
+}
+
+function readAsDataURL(blob) {
+  return new Promise((resolve, reject) => {
+    const r = new FileReader();
+    r.onload = () => resolve(r.result);
+    r.onerror = () => reject(r.error);
+    r.readAsDataURL(blob);
+  });
+}
+
+async function urlToDataURL(url) {
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(`${url} returned ${res.status}`);
+  return readAsDataURL(await res.blob());
+}
+
+function makePage(name, src) {
+  return { name, src, base64: src.split(",")[1], markdown: null, raw: null, status: "idle", error: null };
+}
+
+// ============================================================
+// Theme
+// ============================================================
+function applyTheme(t) {
+  document.documentElement.dataset.theme = t;
+  try { localStorage.setItem("ocr-theme", t); } catch (e) {}
+}
+(function initTheme() {
+  let saved = null;
+  try { saved = localStorage.getItem("ocr-theme"); } catch (e) {}
+  applyTheme(saved || (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light"));
+})();
+els.themeBtn.addEventListener("click", () =>
+  applyTheme(document.documentElement.dataset.theme === "dark" ? "light" : "dark"));
+
+// ============================================================
+// Loading documents and samples
+// ============================================================
+async function pdfToPages(file) {
+  const pdf = await pdfjsLib.getDocument({ data: await file.arrayBuffer() }).promise;
+  if (pdf.numPages > CONFIG.maxPdfPages) {
+    throw new Error(`${file.name} has ${pdf.numPages} pages; the limit is ${CONFIG.maxPdfPages}.`);
+  }
+  const out = [];
+  for (let i = 1; i <= pdf.numPages; i++) {
+    setProgress(i - 1, pdf.numPages, `Rendering ${file.name}: page ${i} of ${pdf.numPages}`);
+    const page = await pdf.getPage(i);
+    const vp = page.getViewport({ scale: CONFIG.pdfScale });
+    const canvas = document.createElement("canvas");
+    canvas.width = Math.floor(vp.width);
+    canvas.height = Math.floor(vp.height);
+    await page.render({ canvasContext: canvas.getContext("2d"), viewport: vp }).promise;
+    out.push(makePage(`${file.name} · p${i}`, canvas.toDataURL("image/png")));
+  }
+  return out;
+}
+
+function afterAdd(start) {
+  showPage(start);
+  updateButtons();
+  renderPageList();
+  rebuildOutput();
+  if (els.optAuto.checked && state.pages.length > start) {
+    convertIndices(range(start, state.pages.length));
+  }
+}
+
+async function addFiles(fileList) {
+  const files = [...fileList];
+  if (!files.length) return;
+  const start = state.pages.length;
+  setProgress(0, 1, "Loading documents…");
+  try {
+    for (const f of files) {
+      if (f.type === "application/pdf") {
+        state.pages.push(...await pdfToPages(f));
+      } else if (f.type.startsWith("image/")) {
+        state.pages.push(makePage(f.name, await readAsDataURL(f)));
+      } else {
+        toast(`Skipped ${f.name}: only images and PDFs are supported.`, true);
+      }
+    }
+  } catch (err) {
+    console.error(err);
+    toast(err.message || "Could not load a file.", true);
+  }
+  hideProgress();
+  afterAdd(start);
+}
+
+async function addSample(s) {
+  try {
+    if (!s.src) s.src = await urlToDataURL(s.url);
+    els.modality.value = s.modality;
+    els.language.value = s.lang;
+    const start = state.pages.length;
+    state.pages.push(makePage(s.label, s.src));
+    afterAdd(start);
+    toast(`Added sample: ${s.label}`);
+  } catch (err) {
+    console.error(err);
+    toast(`Could not load sample "${s.label}": ${err.message}`, true);
+  }
+}
+
+function renderSampleGallery() {
+  els.samples.innerHTML = "";
+  state.samples.forEach(s => {
+    const btn = document.createElement("button");
+    btn.className = "sample" + (s.src ? "" : " loading");
+    btn.title = `Add ${s.label} to your documents`;
+    const img = document.createElement("img");
+    img.alt = s.label;
+    if (s.src) img.src = s.src;
+    const cap = document.createElement("div");
+    cap.className = "cap";
+    cap.textContent = s.label;
+    btn.append(img, cap);
+    btn.addEventListener("click", () => addSample(s));
+    els.samples.appendChild(btn);
+  });
+}
+
+// ============================================================
+// Viewer: zoom, pan, rotate, pages
+// ============================================================
+function applyView() {
+  const v = state.view;
+  els.stage.style.transform =
+    `translate(-50%,-50%) translate(${v.tx}px,${v.ty}px) rotate(${v.rot}deg) scale(${v.s})`;
+  els.zoomLabel.textContent = Math.round(v.s * 100) + "%";
+}
+
+function setScale(s) {
+  state.view.s = clamp(s, ZOOM_MIN, ZOOM_MAX);
+  applyView();
+}
+function zoomBy(f) { setScale(state.view.s * f); }
+
+function fitView() {
+  const img = els.viewImg;
+  if (!img.naturalWidth) return;
+  const box = els.viewerBody.getBoundingClientRect();
+  const quarter = state.view.rot % 180 !== 0;
+  const w = quarter ? img.naturalHeight : img.naturalWidth;
+  const h = quarter ? img.naturalWidth : img.naturalHeight;
+  state.view.tx = 0;
+  state.view.ty = 0;
+  setScale(Math.min(box.width / w, box.height / h) * 0.92);
+}
+
+function actualSize() {
+  state.view.tx = 0;
+  state.view.ty = 0;
+  setScale(1);
+}
+
+function rotate(deg) {
+  state.view.rot = (((state.view.rot + deg) % 360) + 360) % 360;
+  applyView();
+}
+
+els.viewImg.addEventListener("load", fitView);
+els.zoomIn.addEventListener("click", () => zoomBy(1.25));
+els.zoomOut.addEventListener("click", () => zoomBy(1 / 1.25));
+els.zoomFit.addEventListener("click", fitView);
+els.zoomActual.addEventListener("click", actualSize);
+els.rotL.addEventListener("click", () => rotate(-90));
+els.rotR.addEventListener("click", () => rotate(90));
+
+els.viewerBody.addEventListener("wheel", e => {
+  if (!state.pages.length) return;
+  e.preventDefault();
+  zoomBy(e.deltaY < 0 ? 1.12 : 1 / 1.12);
+}, { passive: false });
+
+els.viewerBody.addEventListener("dblclick", () => {
+  if (Math.abs(state.view.s - 1) < 0.01) fitView(); else actualSize();
+});
+
+let drag = null;
+els.viewerBody.addEventListener("pointerdown", e => {
+  if (e.button !== 0 || !state.pages.length) return;
+  drag = { x: e.clientX, y: e.clientY, tx: state.view.tx, ty: state.view.ty };
+  els.viewerBody.setPointerCapture(e.pointerId);
+  els.viewerBody.classList.add("dragging");
+});
+els.viewerBody.addEventListener("pointermove", e => {
+  if (!drag) return;
+  state.view.tx = drag.tx + (e.clientX - drag.x);
+  state.view.ty = drag.ty + (e.clientY - drag.y);
+  applyView();
+});
+const endDrag = () => { drag = null; els.viewerBody.classList.remove("dragging"); };
+els.viewerBody.addEventListener("pointerup", endDrag);
+els.viewerBody.addEventListener("pointercancel", endDrag);
+
+function showPage(i) {
+  const n = state.pages.length;
+  if (!n) {
+    state.current = 0;
+    els.viewImg.removeAttribute("src");
+    els.emptyState.classList.remove("hidden");
+    els.pageLabel.textContent = "–";
+    els.downloadImg.classList.add("hidden");
+    els.zoomLabel.textContent = "100%";
+    renderPageList();
+    renderRaw();
+    return;
+  }
+  state.current = clamp(i, 0, n - 1);
+  const p = state.pages[state.current];
+  els.emptyState.classList.add("hidden");
+  state.view.rot = 0;
+  els.viewImg.src = p.src;
+  els.pageLabel.textContent = `${state.current + 1} / ${n}`;
+  els.downloadImg.href = p.src;
+  els.downloadImg.download = p.name.replace(/[^\w.-]+/g, "_") + ".jpg";
+  els.downloadImg.classList.remove("hidden");
+  renderPageList();
+  renderRaw();
+}
+
+els.prevPage.addEventListener("click", () => showPage(state.current - 1));
+els.nextPage.addEventListener("click", () => showPage(state.current + 1));
+els.toggleViewer.addEventListener("click", () => {
+  const hidden = els.app.classList.toggle("no-viewer");
+  els.toggleViewer.textContent = hidden ? "Show viewer" : "Hide viewer";
+  if (!hidden && state.pages.length) requestAnimationFrame(fitView);
+});
+
+// ============================================================
+// Page list
+// ============================================================
+const STATUS_LABEL = { idle: "Not converted", running: "Converting…", done: "Done", error: "Error" };
+
+function renderPageList() {
+  els.pageList.innerHTML = "";
+  state.pages.forEach((p, i) => {
+    const li = document.createElement("li");
+    li.className = "page-item" + (i === state.current ? " active" : "");
+    const img = document.createElement("img");
+    img.src = p.src;
+    img.alt = "";
+    const info = document.createElement("div");
+    info.className = "info";
+    const name = document.createElement("div");
+    name.className = "name";
+    name.textContent = p.name;
+    name.title = p.name;
+    const badge = document.createElement("span");
+    badge.className = "badge " + p.status;
+    badge.textContent = STATUS_LABEL[p.status];
+    info.append(name, badge);
+    li.append(img, info);
+    li.addEventListener("click", () => showPage(i));
+    els.pageList.appendChild(li);
+  });
+}
+
+// ============================================================
+// OCR API
+// ============================================================
+function cleanText(t) {
+  let s = String(t || "").replace(/\r\n/g, "\n").split("\n").map(l => l.trimEnd()).join("\n");
+  if (els.optCollapse.checked) s = s.replace(/\n{3,}/g, "\n\n");
+  return s.trim();
+}
+
+// The IIIT server returns [{"text": "...", "meta": {}}]
+function extractText(json) {
+  if (json == null) return "";
+  if (typeof json === "string") return json;
+  if (Array.isArray(json)) return json.map(extractText).filter(Boolean).join("\n");
+  if (typeof json.markdown === "string") return json.markdown;
+  if (typeof json.text === "string") return json.text;
+  if (Array.isArray(json.lines)) return json.lines.map(extractText).join("\n");
+  if (Array.isArray(json.words)) {
+    return json.words.map(w => (typeof w === "string" ? w : w.text || "")).join(" ");
+  }
+  for (const key of ["data", "result", "results", "output", "pages"]) {
+    if (json[key] !== undefined) return extractText(json[key]);
+  }
+  return JSON.stringify(json, null, 2);
+}
+
+async function callOcr(base64, cfg, signal) {
+  checkSupported(cfg.modality, cfg.language);
+  const body = {
+    imageContent: [base64],
+    modality: cfg.modality,
+    level: "word",
+    language: cfg.language,
+    version: versionFor(cfg.modality, cfg.language),
+    modelid: "",
+    omit: true,
+    meta: {}
+  };
+  const headers = { "Content-Type": "application/json" };
+  if (CONFIG.apiKey) headers.Authorization = `Bearer ${CONFIG.apiKey}`;
+
+  let res;
+  try {
+    res = await fetch(CONFIG.apiUrl, { method: "POST", headers, body: JSON.stringify(body), signal });
+  } catch (e) {
+    if (e.name === "AbortError") throw e;
+    throw new Error(
+      `Could not reach the OCR proxy (${CONFIG.apiUrl}). Check that it is awake and that ` +
+      `ALLOWED_ORIGINS on Render includes ${location.origin}.`
+    );
+  }
+  const text = await res.text();
+  if (!res.ok) throw new Error(`OCR request failed (${res.status}): ${text.slice(0, 300)}`);
+  try { return JSON.parse(text); } catch { return text; }
+}
+
+async function convertIndices(indices) {
+  if (state.busy || !indices.length) return;
+  const cfg = { modality: els.modality.value, language: els.language.value };
+  state.abort = new AbortController();
+  setBusy(true);
+
+  let done = 0, failed = 0, cancelled = false;
+  try {
+    for (const i of indices) {
+      const p = state.pages[i];
+      p.status = "running";
+      p.error = null;
+      renderPageList();
+      setProgress(done, indices.length, `Converting ${p.name} (${done + 1} of ${indices.length})`);
+
+      try {
+        const json = await callOcr(p.base64, cfg, state.abort.signal);
+        p.raw = json;
+        p.markdown = cleanText(extractText(json));
+        p.status = "done";
+      } catch (err) {
+        if (err.name === "AbortError") { p.status = "idle"; cancelled = true; break; }
+        p.status = "error";
+        p.error = err.message;
+        failed++;
+        console.error(err);
+        toast(`${p.name}: ${err.message}`, true);
+      }
+
+      done++;
+      renderPageList();
+      if (state.pages[state.current] === p) renderRaw();
+      rebuildOutput();
+    }
+    toast(cancelled ? "Conversion cancelled." :
+      failed ? `Finished with ${failed} error(s).` : "Conversion complete.", failed > 0 && !cancelled);
+  } finally {
+    state.abort = null;
+    setBusy(false);
+    hideProgress();
+    renderPageList();
+    renderRaw();
+    rebuildOutput();
+  }
+}
+
+els.convertCurrent.addEventListener("click", () => convertIndices([state.current]));
+els.convertAll.addEventListener("click", () => convertIndices(range(0, state.pages.length)));
+
+// Table extraction: sends the current page to the table service and shows the rebuilt HTML table
+async function convertTable() {
+  if (state.busy || !state.pages.length) return;
+  const p = state.pages[state.current];
+  setBusy(true);
+  p.status = "running";
+  p.error = null;
+  renderPageList();
+  setProgress(0, 1, `Extracting table from ${p.name}. This can take a few minutes.`);
+
+  try {
+    checkSupported(els.modality.value, els.language.value);
+    const blob = await (await fetch(p.src)).blob();
+    const form = new FormData();
+    form.append("file", blob, p.name.replace(/[^\w.-]+/g, "_") + ".png");
+    form.append("lang", els.language.value);
+    form.append("modality", els.modality.value);
+    // "table": find the table on the page; if none is found, read the whole image
+    // as a table (for images already cropped to the table)
+    form.append("mode", "table");
+
+    const res = await fetch(CONFIG.tableUrl, { method: "POST", body: form });
+    const text = await res.text();
+    if (!res.ok) {
+      let msg = text;
+      try { msg = JSON.parse(text).detail || text; } catch (e) {}
+      throw new Error(`Table extraction ${res.status}: ${String(msg).slice(0, 300)}`);
+    }
+    const json = JSON.parse(text);
+    if (!json.html) throw new Error("No table was found on this page.");
+    p.raw = json;
+    p.markdown = json.html;
+    p.status = "done";
+    toast("Table extracted.");
+  } catch (err) {
+    p.status = "error";
+    p.error = err.message;
+    console.error(err);
+    toast(err.message, true);
+  } finally {
+    setBusy(false);
+    hideProgress();
+    renderPageList();
+    renderRaw();
+    rebuildOutput();
+  }
+}
+els.convertTable.addEventListener("click", convertTable);
+els.cancelBtn.addEventListener("click", () => state.abort && state.abort.abort());
+els.clearPages.addEventListener("click", () => {
+  if (state.busy || !confirm("Remove all documents and converted output?")) return;
+  state.pages = [];
+  state.current = 0;
+  showPage(0);
+  updateButtons();
+  rebuildOutput();
+});
+
+els.fileInput.addEventListener("change", e => {
+  addFiles(e.target.files);
+  e.target.value = "";
+});
+els.dropzone.addEventListener("click", () => els.fileInput.click());
+["dragenter", "dragover"].forEach(ev =>
+  els.dropzone.addEventListener(ev, e => { e.preventDefault(); els.dropzone.classList.add("over"); }));
+["dragleave", "drop"].forEach(ev =>
+  els.dropzone.addEventListener(ev, e => { e.preventDefault(); els.dropzone.classList.remove("over"); }));
+els.dropzone.addEventListener("drop", e => addFiles(e.dataTransfer.files));
+
+// ============================================================
+// Output panel
+// ============================================================
+function rebuildOutput() {
+  const multi = state.pages.length > 1;
+  const parts = state.pages
+    .filter(p => p.markdown !== null)
+    .map(p => (els.optHeadings.checked && multi ? `## ${p.name}\n\n` : "") + p.markdown);
+  const sep = els.optRules.checked ? "\n\n---\n\n" : "\n\n";
+  els.mdText.value = parts.join(sep);
+  renderPreview();
+  updateStats();
+}
+
+function renderPreview() {
+  const md = els.mdText.value;
+  els.previewPane.innerHTML = md.trim()
+    ? DOMPurify.sanitize(marked.parse(md))
+    : `<p class="muted">Nothing converted yet. Pick a sample or upload a document, then press Convert.</p>`;
+}
+
+function renderRaw() {
+  const p = state.pages[state.current];
+  if (!p) { els.rawPane.textContent = "No document selected."; return; }
+  if (p.raw != null) els.rawPane.textContent = JSON.stringify(p.raw, null, 2);
+  else if (p.error) els.rawPane.textContent = "Error: " + p.error;
+  else els.rawPane.textContent = "Not converted yet.";
+}
+
+function updateStats() {
+  const text = els.mdText.value.trim();
+  const words = text ? text.split(/\s+/).length : 0;
+  const done = state.pages.filter(p => p.markdown !== null).length;
+  els.statWords.textContent = `${words.toLocaleString()} words`;
+  els.statChars.textContent = `${els.mdText.value.length.toLocaleString()} characters`;
+  els.statPages.textContent = `${done} of ${state.pages.length} pages converted`;
+}
+
+let previewTimer = null;
+els.mdText.addEventListener("input", () => {
+  clearTimeout(previewTimer);
+  previewTimer = setTimeout(() => { renderPreview(); updateStats(); }, 200);
+});
+
+document.querySelectorAll(".tab").forEach(btn => {
+  btn.addEventListener("click", () => {
+    document.querySelectorAll(".tab").forEach(b => b.classList.toggle("on", b === btn));
+    const t = btn.dataset.tab;
+    els.previewPane.classList.toggle("hidden", t !== "preview");
+    els.mdText.classList.toggle("hidden", t !== "markdown");
+    els.rawPane.classList.toggle("hidden", t !== "raw");
+    if (t === "raw") renderRaw();
+  });
+});
+
+function download(name, text, type) {
+  const url = URL.createObjectURL(new Blob([text], { type }));
+  const a = Object.assign(document.createElement("a"), { href: url, download: name });
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+els.copyBtn.addEventListener("click", async () => {
+  try {
+    await navigator.clipboard.writeText(els.mdText.value);
+    toast("Copied to clipboard.");
+  } catch (e) {
+    toast("Copy failed. Select the text in the Markdown tab and copy it manually.", true);
+  }
+});
+els.dlMd.addEventListener("click", () => download("ocr-output.md", els.mdText.value, "text/markdown"));
+els.dlTxt.addEventListener("click", () => download("ocr-output.txt", els.mdText.value, "text/plain"));
+els.clearOut.addEventListener("click", () => {
+  if (!confirm("Clear all converted output? Documents stay loaded.")) return;
+  state.pages.forEach(p => { p.markdown = null; p.raw = null; p.status = "idle"; p.error = null; });
+  renderPageList();
+  renderRaw();
+  rebuildOutput();
+});
+
+// ============================================================
+// Keyboard shortcuts
+// ============================================================
+document.addEventListener("keydown", e => {
+  const mod = e.ctrlKey || e.metaKey;
+  if (mod && e.key === "Enter") { e.preventDefault(); els.convertCurrent.click(); return; }
+  if (mod && e.key.toLowerCase() === "s") { e.preventDefault(); els.dlMd.click(); return; }
+  if (mod || e.altKey) return;
+  if (/^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName)) return;
+
+  switch (e.key) {
+    case "+": case "=": zoomBy(1.25); break;
+    case "-": case "_": zoomBy(1 / 1.25); break;
+    case "0": fitView(); break;
+    case "1": actualSize(); break;
+    case "r": rotate(90); break;
+    case "R": rotate(-90); break;
+    case "ArrowLeft": showPage(state.current - 1); break;
+    case "ArrowRight": showPage(state.current + 1); break;
+  }
+});
+
+// ============================================================
+// Startup: build sample gallery and preload the first sample
+// ============================================================
+(async function init() {
+  state.samples = [
+    ...GENERATED_SAMPLES,
+    ...CONFIG.extraSamples.map(s => ({ ...s, label: s.label, src: null }))
+  ];
+  renderSampleGallery();
+  updateButtons();
+  renderPreview();
+  updateStats();
+  showPage(0);
+
+  // Generate the built-in samples, updating thumbnails as each one finishes.
+  for (const s of state.samples) {
+    if (s.generated && !s.src) {
+      s.src = await renderSample(s);
+      renderSampleGallery();
+    }
+  }
+
+  // Preload the first sample into the viewer.
+  if (state.samples[0] && state.samples[0].src) {
+    await addSample(state.samples[0]);
+    state.pages.length = Math.min(state.pages.length, 1);
+    showPage(0);
+    renderPageList();
+    rebuildOutput();
+  }
+})();
+</script>
+</body>
+</html>
