@@ -1,0 +1,4 @@
+# Only for tools/build_samples.py thumbnails and the tests; the site itself needs nothing.
+pillow
+pytest
+playwright   # then: python -m playwright install chromium

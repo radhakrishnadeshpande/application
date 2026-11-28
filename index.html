@@ -147,6 +147,25 @@ button,select,input,textarea{font:inherit;color:inherit}
 .model-note{margin:10px 0 0;font-size:13px;color:var(--muted)}
 .model-note b{color:var(--text);font-weight:600}
 
+/* Reference samples */
+.sample-langs{margin-top:10px}
+.sample-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-top:10px}
+.thumb{position:relative;aspect-ratio:3/4;padding:0;border:1px solid var(--rule);border-radius:var(--r-sm);background:#fff;
+  overflow:hidden;cursor:pointer;transition:border-color .15s,box-shadow .15s}
+.thumb img{width:100%;height:100%;object-fit:cover;object-position:top;display:block}
+.sample-grid[data-domain="table"] .thumb img{object-fit:contain;object-position:center}
+.thumb .k{position:absolute;left:3px;top:3px;min-width:17px;height:17px;padding:0 4px;border-radius:5px;background:var(--surface);
+  color:var(--muted);font-size:11px;font-weight:600;line-height:17px;text-align:center;box-shadow:0 0 0 1px var(--rule)}
+.thumb:hover:not(:disabled){border-color:var(--ink-soft)}
+.thumb[aria-pressed="true"]{border-color:var(--ink);box-shadow:0 0 0 2px var(--ink)}
+.thumb[aria-pressed="true"] .k{background:var(--ink);color:var(--on-ink);box-shadow:none}
+.thumb:disabled{opacity:.42;cursor:not-allowed}
+.thumb.broken{display:grid;place-items:center;background:var(--surface-2)}
+.thumb.broken img{display:none}
+.thumb.broken::after{content:"Missing";font-size:10.5px;color:var(--sindoor)}
+.sample-info{min-height:20px}
+.sample-run{margin-top:10px}
+
 .drop{display:flex;flex-direction:column;align-items:center;gap:3px;padding:16px 12px;border:1.5px dashed var(--rule-strong);
   border-radius:var(--r-lg);background:var(--surface-2);text-align:center;cursor:pointer;transition:border-color .15s,background .15s}
 .drop:hover{border-color:var(--ink-soft)}
@@ -320,6 +339,19 @@ kbd{font-family:var(--ui);font-size:12.5px;font-weight:600;padding:1px 7px;borde
 
   <!-- ======================= Rail ======================= -->
   <aside class="rail" aria-label="Settings and documents">
+    <section class="step" id="samplesStep" aria-labelledby="samplesTitle">
+      <div class="step-head"><h2 id="samplesTitle">Reference samples</h2><span id="sampleCount" class="aside"></span></div>
+      <div id="domainSeg" class="seg" role="group" aria-label="Sample domain">
+        <button data-domain="printed" aria-pressed="true" title="Printed documents">Printed</button>
+        <button data-domain="handwritten" aria-pressed="false" title="Handwritten documents">Handwritten</button>
+        <button data-domain="table" aria-pressed="false" title="Table extraction">Tables</button>
+      </div>
+      <div id="sampleLangs" class="scripts sample-langs" role="radiogroup" aria-label="Sample language"></div>
+      <div id="sampleGrid" class="sample-grid" role="group" aria-label="Sample pages"></div>
+      <p id="sampleInfo" class="model-note sample-info" aria-live="polite"></p>
+      <button id="runSample" class="btn primary block sample-run" disabled>Read this sample</button>
+    </section>
+
     <section class="step">
       <div class="step-head"><span class="n">1</span><h2>Language</h2><span id="langName" class="aside"></span></div>
       <div id="scripts" class="scripts" role="radiogroup" aria-label="Language"></div>
@@ -400,7 +432,7 @@ kbd{font-family:var(--ui);font-size:12.5px;font-weight:600;padding:1px 7px;borde
         <div class="card">
           <div class="big" aria-hidden="true">अ ఆ ਕ</div>
           <h3>Add a page to begin</h3>
-          <p>Drop scans or PDFs anywhere in this window, or paste an image with <kbd>Ctrl</kbd> <kbd>V</kbd>.</p>
+          <p>Drop scans or PDFs anywhere in this window, or paste an image with <kbd>Ctrl</kbd> <kbd>V</kbd>. You can also pick a reference sample on the left.</p>
           <button id="emptyBrowse" class="btn primary">Choose files</button>
         </div>
       </div>
@@ -515,6 +547,8 @@ const CONFIG = {
   // Model versions
   printedVersion: "shashiocr",
   handwrittenVersion: "V-01.11.00.00",
+  // Reference samples (built by tools/build_samples.py). Set to "" to hide the section.
+  samplesUrl: "samples/manifest.json",
   apiKey: "",
   pdfScale: 2,          // PDF render scale (2 = about 150 dpi for A4)
   maxPdfPages: 200,
@@ -688,6 +722,7 @@ function setLang(code) {
   store.set("lang", code);
   renderScripts();
   updateButtons();
+  renderSamples();
 }
 function setModality(m) {
   state.modality = m;
@@ -701,9 +736,235 @@ function setModality(m) {
   renderScripts();
   renderModelNote();
   updateButtons();
+  renderSamples();
 }
 $("#mPrinted").onclick = () => setModality("printed");
 $("#mHand").onclick = () => setModality("handwritten");
+
+// ============================================================
+// Reference samples (samples/manifest.json, built by tools/build_samples.py)
+// A sample is opened as an ordinary page, then read with the same
+// convertIndices() -> ocrText() / ocrTable() path as an uploaded file.
+// ============================================================
+const DOMAINS = {
+  printed:     { label: "Printed documents",     short: "Printed",     kind: "text",  run: "Read this sample" },
+  handwritten: { label: "Handwritten documents", short: "Handwritten", kind: "text",  run: "Read this sample" },
+  table:       { label: "Table extraction",      short: "Table",       kind: "table", run: "Extract this table" }
+};
+const samples = {
+  data: null,        // {domain: {lang: [sample]}} once loaded
+  error: null,
+  domain: "printed",
+  lang: {},          // last language shown per domain
+  pick: {},          // "domain/lang" -> selected sample index
+  opening: new Map() // sample id -> promise, so double clicks open a sample once
+};
+
+// Table samples can be printed or handwritten tables; the other domains are their own modality.
+const sampleModality = (d, s) => d === "table" ? (s && s.modality === "handwritten" ? "handwritten" : "printed") : d;
+function sampleSupported(d, lang, s) {
+  if (d !== "table") return SUPPORT[d].has(lang);
+  return (sampleModality(d, s) === "handwritten" ? SUPPORT.tableHandwritten : SUPPORT.tablePrinted).has(lang);
+}
+
+function cleanManifest(j) {
+  const out = {};
+  for (const d of Object.keys(DOMAINS)) {
+    out[d] = {};
+    const langs = j && j.domains && j.domains[d];
+    if (!langs || typeof langs !== "object") continue;
+    for (const code of Object.keys(langs)) {
+      if (!LANG_BY[code]) { console.warn(`Reference samples: unknown language "${code}" in ${d}, skipped.`); continue; }
+      const list = Array.isArray(langs[code]) ? langs[code].filter(s => s && typeof s.src === "string" && s.src) : [];
+      if (list.length) out[d][code] = list.map((s, k) => ({ ...s, id: String(s.id || `${d}-${code}-${k + 1}`) }));
+    }
+  }
+  return out;
+}
+
+async function loadSamples() {
+  if (!CONFIG.samplesUrl) { $("#samplesStep").hidden = true; return; }
+  try {
+    const r = await fetch(CONFIG.samplesUrl, { cache: "no-cache" });
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    samples.data = cleanManifest(await r.json());
+  } catch (e) {
+    console.error("Reference samples could not be loaded:", e);
+    samples.error = location.protocol === "file:"
+      ? "Reference samples need the page to be served over http, for example with python -m http.server."
+      : "The reference samples could not be loaded.";
+  }
+  renderSamples();
+}
+
+const sampleLangs = d => samples.data ? LANGS.map(l => l.code).filter(c => samples.data[d][c]) : [];
+function sampleLang(d) {
+  const langs = sampleLangs(d);
+  if (langs.includes(state.lang)) return state.lang;
+  if (langs.includes(samples.lang[d])) return samples.lang[d];
+  return langs[0] || null;
+}
+function currentSample() {
+  const d = samples.domain, l = sampleLang(d);
+  if (!l) return null;
+  const list = samples.data[d][l], k = samples.pick[`${d}/${l}`];
+  return k != null && list[k] ? { d, l, k, s: list[k], n: list.length } : null;
+}
+const sampleName = (d, l, k) => `${DOMAINS[d].short} · ${LANG_BY[l].name} · sample ${k + 1}`;
+
+function renderSamples() {
+  const d = samples.domain, def = DOMAINS[d];
+  const langBox = $("#sampleLangs"), grid = $("#sampleGrid"), info = $("#sampleInfo");
+  document.querySelectorAll("#domainSeg button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.domain === d)));
+  langBox.innerHTML = "";
+  grid.innerHTML = "";
+  grid.dataset.domain = d;
+  $("#runSample").textContent = def.run;
+  const langs = sampleLangs(d);
+  $("#sampleCount").textContent = langs.length ? `${langs.length} language${langs.length > 1 ? "s" : ""}` : "";
+  langBox.hidden = grid.hidden = $("#runSample").hidden = !langs.length;
+  if (!samples.data || !langs.length) {
+    info.textContent = !samples.data ? (samples.error || "Loading reference samples…")
+      : `No reference samples have been added for ${def.label.toLowerCase()} yet.`;
+    syncSampleButtons();
+    return;
+  }
+  const lang = sampleLang(d);
+  samples.lang[d] = lang;
+  for (const code of langs) {
+    const l = LANG_BY[code];
+    const b = document.createElement("button");
+    b.className = "script";
+    b.dataset.lang = code;
+    b.setAttribute("role", "radio");
+    b.setAttribute("aria-checked", String(code === lang));
+    b.title = `${l.name} (${l.native}), ${samples.data[d][code].length} samples`;
+    b.innerHTML = `<span class="g" style="font-family:'${l.font}',var(--ui)">${esc(l.glyph)}</span><span class="l">${esc(l.name)}</span>`;
+    b.onclick = () => chooseSampleLang(code);
+    langBox.appendChild(b);
+  }
+  const list = samples.data[d][lang], key = `${d}/${lang}`;
+  list.forEach((s, k) => {
+    const b = document.createElement("button");
+    b.className = "thumb";
+    b.dataset.k = k;
+    b.setAttribute("aria-pressed", String(samples.pick[key] === k));
+    b.setAttribute("aria-label", sampleName(d, lang, k));
+    b.title = `Sample ${k + 1}`;
+    const im = document.createElement("img");
+    im.alt = "";
+    im.loading = "lazy";
+    im.decoding = "async";
+    im.onerror = () => { b.classList.add("broken"); b.title = `Sample ${k + 1}: the image is missing (${s.thumb || s.src})`; };
+    im.src = s.thumb || s.src;
+    const n = document.createElement("span");
+    n.className = "k";
+    n.textContent = k + 1;
+    b.append(im, n);
+    b.onclick = () => pickSample(k);
+    grid.appendChild(b);
+  });
+  const cur = currentSample();
+  if (cur) {
+    const unsupported = sampleSupported(cur.d, cur.l, cur.s) ? ""
+      : `<br>${esc(LANG_BY[cur.l].name)} is not available for ${esc(sampleModality(cur.d, cur.s))} ${cur.d === "table" ? "tables" : "text"}.`;
+    info.innerHTML = `Sample ${cur.k + 1} of ${cur.n}: ${esc(LANG_BY[cur.l].name)}, ${esc(DOMAINS[cur.d].label.toLowerCase())}.${unsupported}`;
+  } else {
+    info.textContent = `${list.length} ${LANG_BY[lang].name} sample${list.length > 1 ? "s" : ""}. Pick one to open it.`;
+  }
+  syncSampleButtons();
+}
+
+function syncSampleButtons() {
+  const free = !state.busy, d = samples.domain;
+  document.querySelectorAll("#domainSeg button").forEach(b => { b.disabled = !free; });
+  document.querySelectorAll("#sampleLangs .script").forEach(b => {
+    // tiles can still belong to the previous domain until renderSamples() redraws them
+    const c = b.dataset.lang, list = samples.data && samples.data[d][c];
+    b.disabled = !free || !list || !list.some(s => sampleSupported(d, c, s));
+  });
+  document.querySelectorAll("#sampleGrid .thumb").forEach(b => { b.disabled = !free; });
+  const cur = currentSample();
+  $("#runSample").disabled = !free || !cur || !sampleSupported(cur.d, cur.l, cur.s);
+}
+
+// Point the language and writing type at a sample, so Convert uses the right model.
+function sampleContext(d, lang, s) {
+  if (state.busy) return;
+  const m = sampleModality(d, s || (samples.data[d][lang] || [])[0]);
+  if (SUPPORT[m].has(lang)) { state.lang = lang; store.set("lang", lang); }
+  setModality(m);
+}
+function chooseDomain(d) {
+  if (state.busy || !DOMAINS[d]) return;
+  samples.domain = d;
+  store.set("sampleDomain", d);
+  const lang = sampleLang(d);
+  if (lang) sampleContext(d, lang); else renderSamples();
+}
+function chooseSampleLang(code) {
+  samples.lang[samples.domain] = code;
+  sampleContext(samples.domain, code);
+}
+async function pickSample(k) {
+  if (state.busy) return;
+  const d = samples.domain, l = sampleLang(d), s = samples.data[d][l][k];
+  samples.pick[`${d}/${l}`] = k;
+  sampleContext(d, l, s);
+  await openSample(d, l, k);
+}
+
+// Open a sample as a page (once). Returns its page index, or -1.
+function openSample(d, l, k) {
+  const s = samples.data[d][l][k];
+  const have = state.pages.findIndex(p => p.sampleId === s.id);
+  if (have >= 0) { showPage(have); return Promise.resolve(have); }
+  if (samples.opening.has(s.id)) return samples.opening.get(s.id);
+  const name = sampleName(d, l, k);
+  const job = (async () => {
+    setRun(`Opening <b>${esc(name)}</b>…`, 0, 0, true);
+    try {
+      let r;
+      try { r = await fetch(s.src); }
+      catch {
+        const remote = (() => { try { return new URL(s.src, location.href).origin !== location.origin; } catch { return false; } })();
+        throw new Error(remote
+          ? "its server did not let this page read the image. Copy the images into the site with tools/build_samples.py"
+          : "the image could not be downloaded");
+      }
+      if (!r.ok) throw new Error(`the image is missing (HTTP ${r.status})`);
+      const blob = await r.blob();
+      if (/^text\//.test(blob.type)) throw new Error("the address did not return an image");
+      const src = await readAsDataURL(blob);
+      const im = await loadImage(src);
+      const p = makePage(name, src, im.naturalWidth, im.naturalHeight);
+      p.sampleId = s.id;
+      if (d === "table" && typeof s.cropped === "boolean") p.tableMode = s.cropped ? "table" : "auto";
+      state.pages.push(p);
+      showPage(state.pages.length - 1);
+      renderPages(); rebuild(); updateButtons();
+      return state.pages.length - 1;
+    } catch (e) {
+      console.error(e);
+      toast(`${name} could not be opened: ${e.message}.`, true);
+      return -1;
+    } finally {
+      clearRun();
+      samples.opening.delete(s.id);
+    }
+  })();
+  samples.opening.set(s.id, job);
+  return job;
+}
+
+document.querySelectorAll("#domainSeg button").forEach(b => b.onclick = () => chooseDomain(b.dataset.domain));
+$("#runSample").onclick = async () => {
+  const cur = currentSample();
+  if (!cur || state.busy) return;
+  sampleContext(cur.d, cur.l, cur.s);
+  const i = await openSample(cur.d, cur.l, cur.k);
+  if (i >= 0) await convertIndices([i], DOMAINS[cur.d].kind);
+};
 
 // ============================================================
 // Adding pages
@@ -975,7 +1236,11 @@ function withTimeout(signal) {
 }
 const RETRYABLE = new Set([502, 503, 504]);
 function problem(status, body) {
-  if (status === 504) return new Error("The OCR server timed out on this page (504). It may be busy; try again, or try a smaller or cropped image.");
+  if (status === 504) {
+    const e = new Error("The OCR server timed out on this page (504). It may be busy; try again, or try a smaller or cropped image.");
+    e.gatewayTimeout = true;
+    return e;
+  }
   if (status === 502 || status === 503) return new Error(`The OCR server is unavailable right now (${status}). Try again in a minute.`);
   let msg = body;
   try { const j = JSON.parse(body); msg = j.detail || j.message || body; } catch {}
@@ -988,7 +1253,7 @@ const sleep = (ms, signal) => new Promise((ok, fail) => {
   signal?.addEventListener("abort", () => { clearTimeout(t); fail(new DOMException("stopped", "AbortError")); }, { once: true });
 });
 // POST with retries on gateway errors. makeInit() builds a fresh request each try.
-async function postWithRetry(url, makeInit, signal, slowMsg) {
+async function postWithRetry(url, makeInit, signal, slowMsg, retryOn = RETRYABLE) {
   for (let attempt = 0; ; attempt++) {
     const t = withTimeout(signal);
     let res;
@@ -999,7 +1264,7 @@ async function postWithRetry(url, makeInit, signal, slowMsg) {
       if (e.name === "AbortError" || e.name === "TimeoutError") throw new Error(slowMsg);
       throw unreachable(url);
     } finally { t.done(); }
-    if (RETRYABLE.has(res.status) && attempt < CONFIG.retries) {
+    if (retryOn.has(res.status) && attempt < CONFIG.retries) {
       setRun(`Server answered ${res.status}. Trying again (${attempt + 2} of ${CONFIG.retries + 1})…`, 0, 0, true);
       await sleep(CONFIG.retryDelayMs * (attempt + 1), signal);
       continue;
@@ -1008,7 +1273,7 @@ async function postWithRetry(url, makeInit, signal, slowMsg) {
   }
 }
 
-async function ocrText(dataUrl, signal) {
+async function ocrText(dataUrl, signal, retryOn = RETRYABLE) {
   const body = {
     imageContent: [dataUrl.split(",")[1]],
     modality: state.modality,
@@ -1023,20 +1288,21 @@ async function ocrText(dataUrl, signal) {
   if (CONFIG.apiKey) headers.Authorization = `Bearer ${CONFIG.apiKey}`;
   const json = JSON.stringify(body);
   const res = await postWithRetry(CONFIG.apiUrl, () => ({ method: "POST", headers, body: json }), signal,
-    "The server took too long to answer. Try a smaller page or try again.");
+    "The server took too long to answer. Try a smaller page or try again.", retryOn);
   const text = await res.text();
   if (!res.ok) throw problem(res.status, text);
   try { return JSON.parse(text); } catch { return text; }
 }
 
-async function ocrTable(dataUrl, signal) {
+async function ocrTable(dataUrl, signal, mode) {
   const blob = await (await fetch(dataUrl)).blob();
   const makeForm = () => {
     const form = new FormData();
     form.append("file", blob, "page" + (blob.type === "image/png" ? ".png" : ".jpg"));
     form.append("lang", state.lang);
     form.append("modality", state.modality);
-    form.append("mode", $("#cropped").checked ? "table" : "auto");
+    // A reference sample may say whether it is cropped to the table; otherwise use the checkbox.
+    form.append("mode", mode || ($("#cropped").checked ? "table" : "auto"));
     return form;
   };
   const headers = {};
@@ -1058,6 +1324,64 @@ async function ocrTable(dataUrl, signal) {
 }
 
 // The text server returns [{"text": "...", "meta": {}}]
+// The OCR gateway stops any request after about 60 s, which a dense printed page can exceed.
+// Then the page is read in horizontal bands cut at blank gaps between lines, and the text is
+// joined in order. A band that still times out is split again, up to MAX_SPLIT_DEPTH times.
+const NO_504_RETRY = new Set([502, 503]);
+const MAX_SPLIT_DEPTH = 3;
+async function ocrTextWhole(dataUrl, signal, onSplit) {
+  try {
+    return await ocrText(dataUrl, signal, NO_504_RETRY);
+  } catch (e) {
+    if (!e.gatewayTimeout || signal?.aborted) throw e;
+    onSplit?.();
+    const im = await loadImage(dataUrl);
+    return ocrBand(im, 0, im.naturalHeight, 1, signal, onSplit);
+  }
+}
+async function ocrBand(im, y0, y1, depth, signal, onSplit) {
+  const cut = blankRowNear(im, y0, y1);
+  const parts = [];
+  for (const [a, b] of [[y0, cut], [cut, y1]]) {
+    const c = document.createElement("canvas");
+    c.width = im.naturalWidth; c.height = b - a;
+    const g = c.getContext("2d");
+    g.fillStyle = "#fff"; g.fillRect(0, 0, c.width, c.height);
+    g.drawImage(im, 0, a, c.width, b - a, 0, 0, c.width, b - a);
+    const url = c.toDataURL("image/jpeg", CONFIG.jpegQuality);
+    try {
+      parts.push(await ocrText(url, signal, NO_504_RETRY));
+    } catch (e) {
+      if (!e.gatewayTimeout || depth >= MAX_SPLIT_DEPTH || signal?.aborted) throw e;
+      onSplit?.();
+      parts.push(await ocrBand(im, a, b, depth + 1, signal, onSplit));
+    }
+  }
+  return parts;
+}
+// The row with the least ink within the middle 40% of [y0, y1), so a cut falls between lines.
+function blankRowNear(im, y0, y1) {
+  const W = Math.min(400, im.naturalWidth), k = W / im.naturalWidth;
+  const H = Math.max(2, Math.round((y1 - y0) * k));
+  const c = document.createElement("canvas");
+  c.width = W; c.height = H;
+  const g = c.getContext("2d", { willReadFrequently: true });
+  g.drawImage(im, 0, y0, im.naturalWidth, y1 - y0, 0, 0, W, H);
+  const px = g.getImageData(0, 0, W, H).data;
+  let best = Math.round(H / 2), bestInk = Infinity;
+  for (let y = Math.round(H * 0.3); y < Math.round(H * 0.7); y++) {
+    let ink = 0;
+    for (let x = 0; x < W; x++) {
+      const i = (y * W + x) * 4;
+      if (px[i] + px[i + 1] + px[i + 2] < 384) ink++;
+    }
+    // prefer the middle when rows are equally blank
+    const score = ink + Math.abs(y - H / 2) / H;
+    if (score < bestInk) { bestInk = score; best = y; }
+  }
+  return y0 + Math.round(best / k);
+}
+
 function extractText(j) {
   if (j == null) return "";
   if (typeof j === "string") return j;
@@ -1106,11 +1430,12 @@ function updateButtons() {
   $("#clearPages").disabled = !free;
   $("#mPrinted").disabled = !free;
   $("#mHand").disabled = !free;
-  document.querySelectorAll(".script").forEach(b => { if (!free) b.disabled = true; });
+  document.querySelectorAll("#scripts .script").forEach(b => { if (!free) b.disabled = true; });
   if (free) renderScriptsDisabledOnly();
+  syncSampleButtons();
 }
 function renderScriptsDisabledOnly() {
-  document.querySelectorAll(".script").forEach((b, k) => { b.disabled = !SUPPORT[state.modality].has(LANGS[k].code); });
+  document.querySelectorAll("#scripts .script").forEach((b, k) => { b.disabled = !SUPPORT[state.modality].has(LANGS[k].code); });
 }
 
 async function convertIndices(indices, kind = "text") {
@@ -1133,10 +1458,12 @@ async function convertIndices(indices, kind = "text") {
     try {
       const data = await prepared(p);
       if (kind === "table") {
-        const j = await ocrTable(data, state.abort.signal);
+        const j = await ocrTable(data, state.abort.signal, p.tableMode);
         p.kind = "table"; p.html = DOMPurify.sanitize(j.html); p.text = null; p.raw = j;
       } else {
-        const j = await ocrText(data, state.abort.signal);
+        const j = await ocrTextWhole(data, state.abort.signal, () =>
+          setRun(`<b>${esc(p.name)}</b> is large for the server; reading it in parts (${langName}, ${state.modality})…`,
+            done, indices.length, true));
         p.kind = "text"; p.text = tidy(extractText(j)); p.html = null; p.raw = j;
       }
       p.status = "done";
@@ -1408,6 +1735,10 @@ window.addEventListener("beforeunload", e => {
   applyLayout(store.get("textOnly", false));
   renderScripts();
   renderModelNote();
+  const dom = store.get("sampleDomain", "printed");
+  samples.domain = DOMAINS[dom] ? dom : "printed";
+  renderSamples();
+  loadSamples();
   showPage(0);
   renderPages();
   rebuild();

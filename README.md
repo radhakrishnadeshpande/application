@@ -60,6 +60,65 @@ The site appears at `https://<your-username>.github.io/<repo-name>/`.
 
 See `server/README.md`.
 
+## 5. Reference samples
+
+The **Reference samples** section at the top of the page shows evaluated pages
+for three domains: printed documents, handwritten documents and table
+extraction. Pick a domain and a language, click one of the five pages to open
+it, then press **Read this sample** or **Extract this table**. The sample is
+read the same way as an uploaded page (`/ocr/infer` or `/layout/table`), with
+the language and writing type set to match the sample. Only the images are
+shown. The CRR and WRR used to choose them are not published.
+
+The samples come from `samples/manifest.json`. Build it from the approved
+selection summary (CSV or JSON, one row per selected page):
+
+```
+domain,language,image_url,crr,wrr,report_url,sample_id,modality,cropped
+Printed Documents,Hindi,https://.../page_012.png,98.7,95.2,https://.../report.html,page_012,,
+Table Extraction,Telugu,https://.../tbl_3.jpg,96.1,90.4,https://.../report.html,tbl_3,printed,true
+```
+
+```
+pip install pillow
+python tools/build_samples.py selection.csv --check     # fetch every image, report problems, write nothing
+python tools/build_samples.py selection.csv --strict    # copy images to samples/<domain>/<lang>/, write the manifest
+```
+
+- Required columns: `domain`, `language`, `image_url`. Language names or codes
+  both work (`Odia` or `ori`). `crr`, `wrr` and `report_url` may stay in the
+  file but are not copied into `samples/`, which is published with the site.
+- `modality` (tables only): `printed` (default) or `handwritten`, which picks the table cell model.
+- `cropped` (tables only): `true` sends `mode=table`, `false` sends `mode=auto`;
+  empty uses the "already cropped" checkbox.
+- A URL that cannot be fetched, a file that is not an image, a duplicate image
+  or a bad row is listed under "Left out" and the script exits with status 1.
+  Nothing is substituted. `--strict` also fails unless there are 7 languages ×
+  5 samples per domain.
+- Images are copied into the site so the page can read them. With
+  `--no-download` the original URLs are kept, which only works if their server
+  sends CORS headers.
+
+Commit `samples/` and the page shows the samples. Until then, each domain
+says that no samples have been added. Set `samplesUrl: ""` in `CONFIG` to hide
+the section.
+
+## Tests
+
+```
+pip install -r requirements-dev.txt
+python -m playwright install chromium
+python -m pytest tests
+```
+
+The tests build a 105-sample fixture selection (synthetic images stamped
+"TEST FIXTURE", in a temp folder) with `tools/build_samples.py`. They open
+every sample of all 21 domain-language combinations in headless Chromium with
+the OCR servers mocked, and check what the page sends. They also check the
+existing upload, convert and table workflow. Screenshots and a JSON log go to
+`test-output/`. `OCR_LIVE=1` also sends one real sample per domain to the
+servers in `CONFIG`.
+
 ## Push to GitHub
 
 ```

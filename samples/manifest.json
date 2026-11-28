@@ -1,0 +1,696 @@
+{
+  "version": 1,
+  "generated": "2026-11-28T11:47:52Z",
+  "source": "selection.csv",
+  "domains": {
+    "printed": {
+      "bn": [
+        {
+          "src": "samples/printed/bn/01.jpg",
+          "thumb": "samples/printed/bn/01.thumb.jpg",
+          "source_url": "https://ilocr.iiit.ac.in/ocr_testing/media/uploaded_images/1010/84964.jpg",
+          "modality": "printed",
+          "sample_id": "79145",
+          "sha256": "77f660d00b2256fa628628546512553a22a3b06a668c35c862c8171ad28cc601",
+          "width": 3196,
+          "height": 5081,
+          "id": "printed-bn-1"
+        },
+        {
+          "src": "samples/printed/bn/02.jpg",
+          "thumb": "samples/printed/bn/02.thumb.jpg",
+          "source_url": "https://ilocr.iiit.ac.in/ocr_testing/media/uploaded_images/1010/85007.jpg",
+          "modality": "printed",
+          "sample_id": "79188",
+          "sha256": "c34ea2a19708c8f78fa38564fb4519acb26eeed65ad68f125e008a74970d0a37",
+          "width": 2849,
+          "height": 4792,
+          "id": "printed-bn-2"
+        },
+        {
+          "src": "samples/printed/bn/03.jpg",
+          "thumb": "samples/printed/bn/03.thumb.jpg",
+          "source_url": "https://ilocr.iiit.ac.in/ocr_testing/media/uploaded_images/1010/85049.jpg",
+          "modality": "printed",
+          "sample_id": "79230",
+          "sha256": "136ab13c908bcdb81cb75a50d9a789c23c0abcf5fb76e3f31c9ae3bd1a1584f1",
+          "width": 2756,
+          "height": 4543,
+          "id": "printed-bn-3"
+        },
+        {
+          "src": "samples/printed/bn/04.jpg",
+          "thumb": "samples/printed/bn/04.thumb.jpg",
+          "source_url": "https://ilocr.iiit.ac.in/ocr_testing/media/uploaded_images/1010/85057.jpg",
+          "modality": "printed",
+          "sample_id": "79238",
+          "sha256": "c6051c6a75c346e3db858ab9ed516392bbd342552989146fff298230a0b7a88e",
+          "width": 2364,
+          "height": 3712,
+          "id": "printed-bn-4"
+        },
+        {
+          "src": "samples/printed/bn/05.jpg",
+          "thumb": "samples/printed/bn/05.thumb.jpg",
+          "source_url": "https://ilocr.iiit.ac.in/ocr_testing/media/uploaded_images/1010/84989.jpg",
+          "modality": "printed",
+          "sample_id": "79170",
+          "sha256": "e52bec4ea8e9eac2d1685f572f9ee202de55c77a2f048d598c675c22edd4e692",
+          "width": 2698,
+          "height": 4489,
+          "id": "printed-bn-5"
+        }
+      ],
+      "gu": [
+        {
+          "src": "samples/printed/gu/01.jpg",
+          "thumb": "samples/printed/gu/01.thumb.jpg",
+          "source_url": "https://ilocr.iiit.ac.in/ocr_testing/media/uploaded_images/1126/79046.jpg",
+          "modality": "printed",
+          "sample_id": "91583",
+          "sha256": "48d9f3aafad824eb0aab993799521771854c810fdaf4a6316afe37fbe2fab8d6",
+          "width": 2500,
+          "height": 4013,
+          "id": "printed-gu-1"
+        },
+        {
+          "src": "samples/printed/gu/02.jpg",
+          "thumb": "samples/printed/gu/02.thumb.jpg",
+          "source_url": "https://ilocr.iiit.ac.in/ocr_testing/media/uploaded_images/1126/79035.jpg",
+          "modality": "printed",
+          "sample_id": "91572",
+          "sha256": "2f8f5df0c37eb318404e47b00dddaa87f3f2a05e7d09157006cecd1bc9e8d762",
+          "width": 2750,
+          "height": 4647,
+          "id": "printed-gu-2"
+        },
+        {
+          "src": "samples/printed/gu/03.jpg",
+          "thumb": "samples/printed/gu/03.thumb.jpg",
+          "source_url": "https://ilocr.iiit.ac.in/ocr_testing/media/uploaded_images/1126/79065.jpg",
+          "modality": "printed",
+          "sample_id": "91599",
+          "sha256": "09f69faec0c8eca8187b1eea6f165636cfeeb1403107ea1d6a8eb2fcd0ff4102",
+          "width": 2656,
+          "height": 3955,
+          "id": "printed-gu-3"
+        },
+        {
+          "src": "samples/printed/gu/04.jpg",
+          "thumb": "samples/printed/gu/04.thumb.jpg",
+          "source_url": "https://ilocr.iiit.ac.in/ocr_testing/media/uploaded_images/1126/79073.jpg",
+          "modality": "printed",
+          "sample_id": "91607",
+          "sha256": "a02f0ddf8e9fb9a579b19b92893781498c40a12b66af725a8b414560e016b905",
+          "width": 3819,
+          "height": 5319,
+          "id": "printed-gu-4"
+        },
+        {
+          "src": "samples/printed/gu/05.jpg",
+          "thumb": "samples/printed/gu/05.thumb.jpg",
+          "source_url": "https://ilocr.iiit.ac.in/ocr_testing/media/uploaded_images/1126/79037.jpg",
+          "modality": "printed",
+          "sample_id": "91574",
+          "sha256": "a42060726830a69b43ee504352f2148874ada45ccf46ee2e18d9bee65afaa9d8",
+          "width": 2526,
+          "height": 3993,
+          "id": "printed-gu-5"
+        }
+      ],
+      "mr": [
+        {
+          "src": "samples/printed/mr/01.jpg",
+          "thumb": "samples/printed/mr/01.thumb.jpg",
+          "source_url": "https://ilocr.iiit.ac.in/ocr_testing/media/uploaded_images/1011/85963.jpg",
+          "modality": "printed",
+          "sample_id": "79394",
+          "sha256": "4055eaf97659909c4cead4f3bdfb2d9f994370bf9b214ab460b485dc0d5c66f2",
+          "width": 3072,
+          "height": 4943,
+          "id": "printed-mr-1"
+        },
+        {
+          "src": "samples/printed/mr/02.jpg",
+          "thumb": "samples/printed/mr/02.thumb.jpg",
+          "source_url": "https://ilocr.iiit.ac.in/ocr_testing/media/uploaded_images/1011/85983.jpg",
+          "modality": "printed",
+          "sample_id": "79414",
+          "sha256": "798f4985df8e7b5e4829b61eb2f0951c887d1969360e1ae0f5454e0468804dc4",
+          "width": 2480,
+          "height": 3509,
+          "id": "printed-mr-2"
+        },
+        {
+          "src": "samples/printed/mr/03.jpg",
+          "thumb": "samples/printed/mr/03.thumb.jpg",
+          "source_url": "https://ilocr.iiit.ac.in/ocr_testing/media/uploaded_images/1011/85883.jpg",
+          "modality": "printed",
+          "sample_id": "79314",
+          "sha256": "f8de892cd6bdd59649c22af6efe28e8b9c721e25ecf34232b37e7ca30cbc1fd3",
+          "width": 2993,
+          "height": 4546,
+          "id": "printed-mr-3"
+        },
+        {
+          "src": "samples/printed/mr/04.jpg",
+          "thumb": "samples/printed/mr/04.thumb.jpg",
+          "source_url": "https://ilocr.iiit.ac.in/ocr_testing/media/uploaded_images/1011/85955.jpg",
+          "modality": "printed",
+          "sample_id": "79386",
+          "sha256": "c0a7cfbc3a961a2341bac98bf17092410f4ee7400a03cb5548f032a9198d4a30",
+          "width": 3051,
+          "height": 4633,
+          "id": "printed-mr-4"
+        },
+        {
+          "src": "samples/printed/mr/05.jpg",
+          "thumb": "samples/printed/mr/05.thumb.jpg",
+          "source_url": "https://ilocr.iiit.ac.in/ocr_testing/media/uploaded_images/1011/85926.jpg",
+          "modality": "printed",
+          "sample_id": "79357",
+          "sha256": "2446c13f85c753c0f93213e82af9ae33c69fa8cf36693350d97fc8d9aca7c967",
+          "width": 3062,
+          "height": 4582,
+          "id": "printed-mr-5"
+        }
+      ],
+      "ta": [
+        {
+          "src": "samples/printed/ta/01.jpg",
+          "thumb": "samples/printed/ta/01.thumb.jpg",
+          "source_url": "https://ilocr.iiit.ac.in/ocr_testing/media/uploaded_images/1138/85626.jpg",
+          "modality": "printed",
+          "sample_id": "92455",
+          "sha256": "75a439217d37dc8487b40dd76a64f591aa412fbd3317211729cfe9a8cc1f17c3",
+          "width": 2610,
+          "height": 4026,
+          "id": "printed-ta-1"
+        },
+        {
+          "src": "samples/printed/ta/02.jpg",
+          "thumb": "samples/printed/ta/02.thumb.jpg",
+          "source_url": "https://ilocr.iiit.ac.in/ocr_testing/media/uploaded_images/1138/85599.jpg",
+          "modality": "printed",
+          "sample_id": "92428",
+          "sha256": "c24550c04b4d9b225038a99abea717446883eb16537385f138fe59387de31cda",
+          "width": 2686,
+          "height": 4520,
+          "id": "printed-ta-2"
+        },
+        {
+          "src": "samples/printed/ta/03.jpg",
+          "thumb": "samples/printed/ta/03.thumb.jpg",
+          "source_url": "https://ilocr.iiit.ac.in/ocr_testing/media/uploaded_images/1138/85677.jpg",
+          "modality": "printed",
+          "sample_id": "92506",
+          "sha256": "63bb60b5bdeb9d78b241471628b8a83e1ebb2fb4547eff9e422c292b530850cd",
+          "width": 1300,
+          "height": 1736,
+          "id": "printed-ta-3"
+        },
+        {
+          "src": "samples/printed/ta/04.jpg",
+          "thumb": "samples/printed/ta/04.thumb.jpg",
+          "source_url": "https://ilocr.iiit.ac.in/ocr_testing/media/uploaded_images/1138/85586.jpg",
+          "modality": "printed",
+          "sample_id": "92415",
+          "sha256": "bb494af8589d317d44c5e9886f86dae3af9324a4e898990e59fd9c54f94badce",
+          "width": 2245,
+          "height": 3572,
+          "id": "printed-ta-4"
+        },
+        {
+          "src": "samples/printed/ta/05.jpg",
+          "thumb": "samples/printed/ta/05.thumb.jpg",
+          "source_url": "https://ilocr.iiit.ac.in/ocr_testing/media/uploaded_images/1138/85559.jpg",
+          "modality": "printed",
+          "sample_id": "92388",
+          "sha256": "889dcb1bc2b68b2c4e44e61adf06365db043e359459b1fb7d31f015646fff8d2",
+          "width": 2808,
+          "height": 4475,
+          "id": "printed-ta-5"
+        }
+      ],
+      "te": [
+        {
+          "src": "samples/printed/te/01.jpg",
+          "thumb": "samples/printed/te/01.thumb.jpg",
+          "source_url": "https://ilocr.iiit.ac.in/ocr_testing/media/uploaded_images/1003/85280.jpg",
+          "modality": "printed",
+          "sample_id": "78311",
+          "sha256": "bff4767e70cbaeed629c016ace6d8156193884090723a474330299d923207c83",
+          "width": 3098,
+          "height": 4846,
+          "id": "printed-te-1"
+        },
+        {
+          "src": "samples/printed/te/02.jpg",
+          "thumb": "samples/printed/te/02.thumb.jpg",
+          "source_url": "https://ilocr.iiit.ac.in/ocr_testing/media/uploaded_images/1003/85307.jpg",
+          "modality": "printed",
+          "sample_id": "78338",
+          "sha256": "bf548169d0a65c2bbee491f1fca7542684bb224b35240a923328d3dea11dab8f",
+          "width": 2861,
+          "height": 4933,
+          "id": "printed-te-2"
+        },
+        {
+          "src": "samples/printed/te/03.jpg",
+          "thumb": "samples/printed/te/03.thumb.jpg",
+          "source_url": "https://ilocr.iiit.ac.in/ocr_testing/media/uploaded_images/1003/85292.jpg",
+          "modality": "printed",
+          "sample_id": "78323",
+          "sha256": "5af1c0aac1b76f6f0542d873cd9e14678f7c2063139b0ddd5b859e06830f4cff",
+          "width": 3562,
+          "height": 4520,
+          "id": "printed-te-3"
+        },
+        {
+          "src": "samples/printed/te/04.jpg",
+          "thumb": "samples/printed/te/04.thumb.jpg",
+          "source_url": "https://ilocr.iiit.ac.in/ocr_testing/media/uploaded_images/1003/85288.jpg",
+          "modality": "printed",
+          "sample_id": "78319",
+          "sha256": "af7c52c31427fc2c638de7e8557a2a3f1a0914e383654e09b3fa971e3922ce6a",
+          "width": 3047,
+          "height": 4628,
+          "id": "printed-te-4"
+        },
+        {
+          "src": "samples/printed/te/05.jpg",
+          "thumb": "samples/printed/te/05.thumb.jpg",
+          "source_url": "https://ilocr.iiit.ac.in/ocr_testing/media/uploaded_images/1003/85350.jpg",
+          "modality": "printed",
+          "sample_id": "78381",
+          "sha256": "bfa82b3f86d0f56d75f25c52c161be338c3d8244d30f04cf7717aa8fc2dfbdf1",
+          "width": 2516,
+          "height": 3846,
+          "id": "printed-te-5"
+        }
+      ]
+    },
+    "handwritten": {
+      "bn": [
+        {
+          "src": "samples/handwritten/bn/01.jpg",
+          "thumb": "samples/handwritten/bn/01.thumb.jpg",
+          "source_url": "https://ilocr.iiit.ac.in/ocr_testing/media/uploaded_images/1082/83708.jpg",
+          "modality": "handwritten",
+          "sample_id": "86607",
+          "sha256": "062ec59dc03dd7c87aff676466319accdec01366c53ad1425927591d1029a102",
+          "width": 2448,
+          "height": 3264,
+          "id": "handwritten-bn-1"
+        },
+        {
+          "src": "samples/handwritten/bn/02.jpg",
+          "thumb": "samples/handwritten/bn/02.thumb.jpg",
+          "source_url": "https://ilocr.iiit.ac.in/ocr_testing/media/uploaded_images/1082/83728.jpg",
+          "modality": "handwritten",
+          "sample_id": "86627",
+          "sha256": "213c41a45456beaf6aa73f423fca9388894c64e67ab91aff54b56f892a2cf44a",
+          "width": 3120,
+          "height": 4160,
+          "id": "handwritten-bn-2"
+        },
+        {
+          "src": "samples/handwritten/bn/03.jpg",
+          "thumb": "samples/handwritten/bn/03.thumb.jpg",
+          "source_url": "https://ilocr.iiit.ac.in/ocr_testing/media/uploaded_images/1082/83703.jpg",
+          "modality": "handwritten",
+          "sample_id": "86602",
+          "sha256": "075ada4b59697ce5e0bab6eea3d9cc2c199778ceab0c86b9bccfe16669664fa6",
+          "width": 3120,
+          "height": 4160,
+          "id": "handwritten-bn-3"
+        },
+        {
+          "src": "samples/handwritten/bn/04.jpg",
+          "thumb": "samples/handwritten/bn/04.thumb.jpg",
+          "source_url": "https://ilocr.iiit.ac.in/ocr_testing/media/uploaded_images/1082/83691.jpg",
+          "modality": "handwritten",
+          "sample_id": "86590",
+          "sha256": "f699c160aea92101c94230f983619ebdf09e6c3bd16b70b114ca275408f3937f",
+          "width": 3120,
+          "height": 4160,
+          "id": "handwritten-bn-4"
+        },
+        {
+          "src": "samples/handwritten/bn/05.jpg",
+          "thumb": "samples/handwritten/bn/05.thumb.jpg",
+          "source_url": "https://ilocr.iiit.ac.in/ocr_testing/media/uploaded_images/1082/83689.jpg",
+          "modality": "handwritten",
+          "sample_id": "86588",
+          "sha256": "00c3e3e5c8c078b85840906a3027b4cae2aa2438073f30c1a53e6f5335fa556b",
+          "width": 3072,
+          "height": 4080,
+          "id": "handwritten-bn-5"
+        }
+      ],
+      "gu": [
+        {
+          "src": "samples/handwritten/gu/01.jpg",
+          "thumb": "samples/handwritten/gu/01.thumb.jpg",
+          "source_url": "https://ilocr.iiit.ac.in/ocr_testing/media/uploaded_images/1081/83762.jpg",
+          "modality": "handwritten",
+          "sample_id": "86461",
+          "sha256": "f467152c9b86513cf58519927cbf9d68de39d31e7f5412b28df432c419b39246",
+          "width": 4032,
+          "height": 3024,
+          "id": "handwritten-gu-1"
+        },
+        {
+          "src": "samples/handwritten/gu/02.jpg",
+          "thumb": "samples/handwritten/gu/02.thumb.jpg",
+          "source_url": "https://ilocr.iiit.ac.in/ocr_testing/media/uploaded_images/1081/83809.jpg",
+          "modality": "handwritten",
+          "sample_id": "86508",
+          "sha256": "37e3019fc7f3940cd0c56f28abfaa5d96253ec9a172a38b3a918672da8bc7233",
+          "width": 3120,
+          "height": 4208,
+          "id": "handwritten-gu-2"
+        },
+        {
+          "src": "samples/handwritten/gu/03.jpg",
+          "thumb": "samples/handwritten/gu/03.thumb.jpg",
+          "source_url": "https://ilocr.iiit.ac.in/ocr_testing/media/uploaded_images/1081/83790.jpg",
+          "modality": "handwritten",
+          "sample_id": "86489",
+          "sha256": "a9c1a07375f92ccdcf48f0d2c4828234f37fd5081fe963f97617509203db12af",
+          "width": 1840,
+          "height": 612,
+          "id": "handwritten-gu-3"
+        },
+        {
+          "src": "samples/handwritten/gu/04.jpg",
+          "thumb": "samples/handwritten/gu/04.thumb.jpg",
+          "source_url": "https://ilocr.iiit.ac.in/ocr_testing/media/uploaded_images/1081/83793.jpg",
+          "modality": "handwritten",
+          "sample_id": "86492",
+          "sha256": "410cdedeec24f48e93d2c53b3c079b909428ec52fc3b3f68deefd1413494e456",
+          "width": 3786,
+          "height": 1453,
+          "id": "handwritten-gu-4"
+        },
+        {
+          "src": "samples/handwritten/gu/05.jpg",
+          "thumb": "samples/handwritten/gu/05.thumb.jpg",
+          "source_url": "https://ilocr.iiit.ac.in/ocr_testing/media/uploaded_images/1081/83765.jpg",
+          "modality": "handwritten",
+          "sample_id": "86464",
+          "sha256": "589525588364bd69433e23499d14e0bbe839710b185990400be810e025b5fde6",
+          "width": 4000,
+          "height": 3000,
+          "id": "handwritten-gu-5"
+        }
+      ],
+      "hi": [
+        {
+          "src": "samples/handwritten/hi/01.jpg",
+          "thumb": "samples/handwritten/hi/01.thumb.jpg",
+          "source_url": "https://ilocr.iiit.ac.in/ocr_testing/media/uploaded_images/1080/83908.jpg",
+          "modality": "handwritten",
+          "sample_id": "86407",
+          "sha256": "6075ce8694438cb5391b2a1dbb365a00ef0b70a25c923e10199bc1cd785d346a",
+          "width": 2448,
+          "height": 3264,
+          "id": "handwritten-hi-1"
+        },
+        {
+          "src": "samples/handwritten/hi/02.jpg",
+          "thumb": "samples/handwritten/hi/02.thumb.jpg",
+          "source_url": "https://ilocr.iiit.ac.in/ocr_testing/media/uploaded_images/1080/83860.jpg",
+          "modality": "handwritten",
+          "sample_id": "86359",
+          "sha256": "bc7f5e7bef63975260352b6fcdb96f4ed6c8a457230c800ce23b9a35c9b316c2",
+          "width": 2193,
+          "height": 937,
+          "id": "handwritten-hi-2"
+        },
+        {
+          "src": "samples/handwritten/hi/03.jpg",
+          "thumb": "samples/handwritten/hi/03.thumb.jpg",
+          "source_url": "https://ilocr.iiit.ac.in/ocr_testing/media/uploaded_images/1080/83873.jpg",
+          "modality": "handwritten",
+          "sample_id": "86372",
+          "sha256": "a968ad61a711a33150d5d708314748cc4014761c828f1a06b53d805a709e47be",
+          "width": 3000,
+          "height": 4000,
+          "id": "handwritten-hi-3"
+        },
+        {
+          "src": "samples/handwritten/hi/04.jpg",
+          "thumb": "samples/handwritten/hi/04.thumb.jpg",
+          "source_url": "https://ilocr.iiit.ac.in/ocr_testing/media/uploaded_images/1080/83901.jpg",
+          "modality": "handwritten",
+          "sample_id": "86400",
+          "sha256": "5d8f8dc4559733d0d64d764ae39fce29f384a2b97f491faae29292b2b4285453",
+          "width": 3072,
+          "height": 4080,
+          "id": "handwritten-hi-4"
+        },
+        {
+          "src": "samples/handwritten/hi/05.jpg",
+          "thumb": "samples/handwritten/hi/05.thumb.jpg",
+          "source_url": "https://ilocr.iiit.ac.in/ocr_testing/media/uploaded_images/1080/83935.jpg",
+          "modality": "handwritten",
+          "sample_id": "86434",
+          "sha256": "5ebc7d994d688f04944a54f5e00f1a626425e8f6dda95a39b941adb1bebfb5a3",
+          "width": 3000,
+          "height": 4000,
+          "id": "handwritten-hi-5"
+        }
+      ],
+      "ml": [
+        {
+          "src": "samples/handwritten/ml/01.jpg",
+          "thumb": "samples/handwritten/ml/01.thumb.jpg",
+          "source_url": "https://ilocr.iiit.ac.in/ocr_testing/media/uploaded_images/1067/84268.jpg",
+          "modality": "handwritten",
+          "sample_id": "85142",
+          "sha256": "1e09ee404edb0dcdd4b6a9fba42cf7cb5787316f4f208e766224f910f0ed09b0",
+          "width": 1443,
+          "height": 2200,
+          "id": "handwritten-ml-1"
+        },
+        {
+          "src": "samples/handwritten/ml/02.jpg",
+          "thumb": "samples/handwritten/ml/02.thumb.jpg",
+          "source_url": "https://ilocr.iiit.ac.in/ocr_testing/media/uploaded_images/1067/84284.jpg",
+          "modality": "handwritten",
+          "sample_id": "85158",
+          "sha256": "2c5e180ac664831873d74221b31aa79c8eee554a0e2bfa8a321f47a11af97445",
+          "width": 2448,
+          "height": 3264,
+          "id": "handwritten-ml-2"
+        },
+        {
+          "src": "samples/handwritten/ml/03.jpg",
+          "thumb": "samples/handwritten/ml/03.thumb.jpg",
+          "source_url": "https://ilocr.iiit.ac.in/ocr_testing/media/uploaded_images/1067/84273.jpg",
+          "modality": "handwritten",
+          "sample_id": "85147",
+          "sha256": "7f24c2616ed1cc5d07bc6a7f5d7df04543c1b9e1f6cf75d1b257304d032adef6",
+          "width": 847,
+          "height": 1100,
+          "id": "handwritten-ml-3"
+        },
+        {
+          "src": "samples/handwritten/ml/04.jpg",
+          "thumb": "samples/handwritten/ml/04.thumb.jpg",
+          "source_url": "https://ilocr.iiit.ac.in/ocr_testing/media/uploaded_images/1067/84272.jpg",
+          "modality": "handwritten",
+          "sample_id": "85146",
+          "sha256": "d4d67139df2e6973b704bcec8f5371b843950c6dd8df3165c7c0c9495bb806a3",
+          "width": 1700,
+          "height": 1779,
+          "id": "handwritten-ml-4"
+        },
+        {
+          "src": "samples/handwritten/ml/05.jpg",
+          "thumb": "samples/handwritten/ml/05.thumb.jpg",
+          "source_url": "https://ilocr.iiit.ac.in/ocr_testing/media/uploaded_images/1067/84261.jpg",
+          "modality": "handwritten",
+          "sample_id": "85135",
+          "sha256": "ea65521b84bbaf56f2e02bdcb53c9013a0774f86c5d632a83f27f1f8aba2b7ff",
+          "width": 1502,
+          "height": 2200,
+          "id": "handwritten-ml-5"
+        }
+      ],
+      "mr": [
+        {
+          "src": "samples/handwritten/mr/01.jpg",
+          "thumb": "samples/handwritten/mr/01.thumb.jpg",
+          "source_url": "https://ilocr.iiit.ac.in/ocr_testing/media/uploaded_images/1072/84516.jpg",
+          "modality": "handwritten",
+          "sample_id": "85390",
+          "sha256": "d940503a1934a5af95f6dce1c84ecad622474c2a2cb7bb39aaf6fbfab4a804e1",
+          "width": 3120,
+          "height": 4160,
+          "id": "handwritten-mr-1"
+        },
+        {
+          "src": "samples/handwritten/mr/02.jpg",
+          "thumb": "samples/handwritten/mr/02.thumb.jpg",
+          "source_url": "https://ilocr.iiit.ac.in/ocr_testing/media/uploaded_images/1072/84545.jpg",
+          "modality": "handwritten",
+          "sample_id": "85419",
+          "sha256": "c3068374ddfbc8e1cfedf4bc6d5f3d00afd4b24da0ad5220c946c2dda88f6bca",
+          "width": 3072,
+          "height": 4080,
+          "id": "handwritten-mr-2"
+        },
+        {
+          "src": "samples/handwritten/mr/03.jpg",
+          "thumb": "samples/handwritten/mr/03.thumb.jpg",
+          "source_url": "https://ilocr.iiit.ac.in/ocr_testing/media/uploaded_images/1072/84530.jpg",
+          "modality": "handwritten",
+          "sample_id": "85404",
+          "sha256": "eb651e9ee0979a29ee3ea8403ace51fae1eb5e3a6631214d26f0d45edf23cdf2",
+          "width": 4144,
+          "height": 1968,
+          "id": "handwritten-mr-3"
+        },
+        {
+          "src": "samples/handwritten/mr/04.jpg",
+          "thumb": "samples/handwritten/mr/04.thumb.jpg",
+          "source_url": "https://ilocr.iiit.ac.in/ocr_testing/media/uploaded_images/1072/84490.jpg",
+          "modality": "handwritten",
+          "sample_id": "85364",
+          "sha256": "70c75d8fb026a6faebfef65a4e828152711061e4bbc34c090e3f55970dd1a0df",
+          "width": 2448,
+          "height": 3264,
+          "id": "handwritten-mr-4"
+        },
+        {
+          "src": "samples/handwritten/mr/05.jpg",
+          "thumb": "samples/handwritten/mr/05.thumb.jpg",
+          "source_url": "https://ilocr.iiit.ac.in/ocr_testing/media/uploaded_images/1072/84470.jpg",
+          "modality": "handwritten",
+          "sample_id": "85344",
+          "sha256": "17199eba8edb0b8eb1eb60275a8ad62b0e2ff06342e92019439139f00d93f922",
+          "width": 3120,
+          "height": 4160,
+          "id": "handwritten-mr-5"
+        }
+      ],
+      "ta": [
+        {
+          "src": "samples/handwritten/ta/01.jpg",
+          "thumb": "samples/handwritten/ta/01.thumb.jpg",
+          "source_url": "https://ilocr.iiit.ac.in/ocr_testing/media/uploaded_images/1065/84084.jpg",
+          "modality": "handwritten",
+          "sample_id": "84958",
+          "sha256": "5ae5eaef811eff7e14bfca15f0b46f09e159af558842b56a14e980393870185c",
+          "width": 3120,
+          "height": 4160,
+          "id": "handwritten-ta-1"
+        },
+        {
+          "src": "samples/handwritten/ta/02.jpg",
+          "thumb": "samples/handwritten/ta/02.thumb.jpg",
+          "source_url": "https://ilocr.iiit.ac.in/ocr_testing/media/uploaded_images/1065/84092.jpg",
+          "modality": "handwritten",
+          "sample_id": "84966",
+          "sha256": "ec364f1bb22794bb291db678b326deabd2fefef1fb7cf8e236fa49726715fe79",
+          "width": 3456,
+          "height": 3456,
+          "id": "handwritten-ta-2"
+        },
+        {
+          "src": "samples/handwritten/ta/03.jpg",
+          "thumb": "samples/handwritten/ta/03.thumb.jpg",
+          "source_url": "https://ilocr.iiit.ac.in/ocr_testing/media/uploaded_images/1065/84072.jpg",
+          "modality": "handwritten",
+          "sample_id": "84946",
+          "sha256": "ec728a03d52558b97214bd95af39add55a2dd9a99b1d2a5cbd25937003da8240",
+          "width": 3456,
+          "height": 4608,
+          "id": "handwritten-ta-3"
+        },
+        {
+          "src": "samples/handwritten/ta/04.jpg",
+          "thumb": "samples/handwritten/ta/04.thumb.jpg",
+          "source_url": "https://ilocr.iiit.ac.in/ocr_testing/media/uploaded_images/1065/84065.jpg",
+          "modality": "handwritten",
+          "sample_id": "84939",
+          "sha256": "ad8fcfeca7a0f22084485fcf1b971893b2dada1ab975529d0f9933d7728a956c",
+          "width": 2992,
+          "height": 4000,
+          "id": "handwritten-ta-4"
+        },
+        {
+          "src": "samples/handwritten/ta/05.jpg",
+          "thumb": "samples/handwritten/ta/05.thumb.jpg",
+          "source_url": "https://ilocr.iiit.ac.in/ocr_testing/media/uploaded_images/1065/84118.jpg",
+          "modality": "handwritten",
+          "sample_id": "84992",
+          "sha256": "160f03556c36516ab53e1188e90936fdbc9539e2af47bb1abaa6d5221e0e126e",
+          "width": 720,
+          "height": 1280,
+          "id": "handwritten-ta-5"
+        }
+      ],
+      "te": [
+        {
+          "src": "samples/handwritten/te/01.jpg",
+          "thumb": "samples/handwritten/te/01.thumb.jpg",
+          "source_url": "https://ilocr.iiit.ac.in/ocr_testing/media/uploaded_images/1064/84556.jpg",
+          "modality": "handwritten",
+          "sample_id": "84830",
+          "sha256": "47a18ce86dc2a13605de43816c029be01b804806dcf9f0fad7a93f79a5dd7e76",
+          "width": 3000,
+          "height": 3000,
+          "id": "handwritten-te-1"
+        },
+        {
+          "src": "samples/handwritten/te/02.jpg",
+          "thumb": "samples/handwritten/te/02.thumb.jpg",
+          "source_url": "https://ilocr.iiit.ac.in/ocr_testing/media/uploaded_images/1064/84614.jpg",
+          "modality": "handwritten",
+          "sample_id": "84888",
+          "sha256": "af903adfd5476829c5d985e20e7c6d16c8ea64e682870da1723c2f02b8e29034",
+          "width": 1821,
+          "height": 2511,
+          "id": "handwritten-te-2"
+        },
+        {
+          "src": "samples/handwritten/te/03.jpg",
+          "thumb": "samples/handwritten/te/03.thumb.jpg",
+          "source_url": "https://ilocr.iiit.ac.in/ocr_testing/media/uploaded_images/1064/84598.jpg",
+          "modality": "handwritten",
+          "sample_id": "84872",
+          "sha256": "3757bca09a355f74bb873f794c8c41613bd86075e62e7e366aecd863689fddf2",
+          "width": 1486,
+          "height": 1108,
+          "id": "handwritten-te-3"
+        },
+        {
+          "src": "samples/handwritten/te/04.jpg",
+          "thumb": "samples/handwritten/te/04.thumb.jpg",
+          "source_url": "https://ilocr.iiit.ac.in/ocr_testing/media/uploaded_images/1064/84582.jpg",
+          "modality": "handwritten",
+          "sample_id": "84856",
+          "sha256": "aef2bd5a41b9c344a643f78a17291c48ce74b21e8f28fdaec59431a01c75e781",
+          "width": 3356,
+          "height": 3104,
+          "id": "handwritten-te-4"
+        },
+        {
+          "src": "samples/handwritten/te/05.jpg",
+          "thumb": "samples/handwritten/te/05.thumb.jpg",
+          "source_url": "https://ilocr.iiit.ac.in/ocr_testing/media/uploaded_images/1064/84644.jpg",
+          "modality": "handwritten",
+          "sample_id": "84918",
+          "sha256": "2f6180501bd072d732853199402e7e7cb2f3fb759accc306ff7debb8ece640e0",
+          "width": 3120,
+          "height": 4160,
+          "id": "handwritten-te-5"
+        }
+      ]
+    },
+    "table": {}
+  }
+}
