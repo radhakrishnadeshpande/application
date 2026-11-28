@@ -518,7 +518,10 @@ const CONFIG = {
   apiKey: "",
   pdfScale: 2,          // PDF render scale (2 = about 150 dpi for A4)
   maxPdfPages: 200,
-  maxSide: 3500,        // larger images are scaled down before sending
+  maxSide: 2400,        // larger images are scaled down before sending
+  jpegQuality: 0.92,    // pages are sent as JPEG; PNG scans are 5-10x larger
+  retries: 2,           // extra tries after a 502/503/504 from the server
+  retryDelayMs: 4000,
   requestTimeoutMs: 300000
 };
 
@@ -938,7 +941,8 @@ function showPage(i) {
 // ============================================================
 async function prepared(p) {
   const big = Math.max(p.w, p.h) > CONFIG.maxSide;
-  if (!p.rot && !big) return p.src;
+  const isJpeg = p.src.startsWith("data:image/jpeg");
+  if (!p.rot && !big && isJpeg) return p.src;
   const im = await loadImage(p.src);
   const s = big ? CONFIG.maxSide / Math.max(p.w, p.h) : 1;
   const w = Math.round(im.naturalWidth * s), h = Math.round(im.naturalHeight * s);
@@ -952,7 +956,7 @@ async function prepared(p) {
   g.translate(c.width / 2, c.height / 2);
   g.rotate(p.rot * Math.PI / 180);
   g.drawImage(im, -w / 2, -h / 2, w, h);
-  return c.toDataURL("image/png");
+  return c.toDataURL("image/jpeg", CONFIG.jpegQuality);
 }
 
 // ============================================================
@@ -969,11 +973,39 @@ function withTimeout(signal) {
   signal?.addEventListener("abort", () => ctl.abort(signal.reason), { once: true });
   return { signal: ctl.signal, done: () => clearTimeout(t) };
 }
+const RETRYABLE = new Set([502, 503, 504]);
 function problem(status, body) {
+  if (status === 504) return new Error("The OCR server timed out on this page (504). It may be busy; try again, or try a smaller or cropped image.");
+  if (status === 502 || status === 503) return new Error(`The OCR server is unavailable right now (${status}). Try again in a minute.`);
   let msg = body;
   try { const j = JSON.parse(body); msg = j.detail || j.message || body; } catch {}
   msg = typeof msg === "string" ? msg : JSON.stringify(msg);
+  if (/<html/i.test(msg)) msg = msg.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
   return new Error(`The server answered ${status}: ${msg.slice(0, 280)}`);
+}
+const sleep = (ms, signal) => new Promise((ok, fail) => {
+  const t = setTimeout(ok, ms);
+  signal?.addEventListener("abort", () => { clearTimeout(t); fail(new DOMException("stopped", "AbortError")); }, { once: true });
+});
+// POST with retries on gateway errors. makeInit() builds a fresh request each try.
+async function postWithRetry(url, makeInit, signal, slowMsg) {
+  for (let attempt = 0; ; attempt++) {
+    const t = withTimeout(signal);
+    let res;
+    try {
+      res = await fetch(url, { ...makeInit(), signal: t.signal });
+    } catch (e) {
+      if (signal?.aborted) throw e;
+      if (e.name === "AbortError" || e.name === "TimeoutError") throw new Error(slowMsg);
+      throw unreachable(url);
+    } finally { t.done(); }
+    if (RETRYABLE.has(res.status) && attempt < CONFIG.retries) {
+      setRun(`Server answered ${res.status}. Trying again (${attempt + 2} of ${CONFIG.retries + 1})…`, 0, 0, true);
+      await sleep(CONFIG.retryDelayMs * (attempt + 1), signal);
+      continue;
+    }
+    return res;
+  }
 }
 
 async function ocrText(dataUrl, signal) {
@@ -989,15 +1021,9 @@ async function ocrText(dataUrl, signal) {
   };
   const headers = { "Content-Type": "application/json" };
   if (CONFIG.apiKey) headers.Authorization = `Bearer ${CONFIG.apiKey}`;
-  const t = withTimeout(signal);
-  let res;
-  try {
-    res = await fetch(CONFIG.apiUrl, { method: "POST", headers, body: JSON.stringify(body), signal: t.signal });
-  } catch (e) {
-    if (signal?.aborted) throw e;
-    if (e.name === "AbortError" || e.name === "TimeoutError") throw new Error("The server took too long to answer. Try a smaller page or try again.");
-    throw unreachable(CONFIG.apiUrl);
-  } finally { t.done(); }
+  const json = JSON.stringify(body);
+  const res = await postWithRetry(CONFIG.apiUrl, () => ({ method: "POST", headers, body: json }), signal,
+    "The server took too long to answer. Try a smaller page or try again.");
   const text = await res.text();
   if (!res.ok) throw problem(res.status, text);
   try { return JSON.parse(text); } catch { return text; }
@@ -1005,22 +1031,18 @@ async function ocrText(dataUrl, signal) {
 
 async function ocrTable(dataUrl, signal) {
   const blob = await (await fetch(dataUrl)).blob();
-  const form = new FormData();
-  form.append("file", blob, "page" + (blob.type === "image/png" ? ".png" : ".jpg"));
-  form.append("lang", state.lang);
-  form.append("modality", state.modality);
-  form.append("mode", $("#cropped").checked ? "table" : "auto");
+  const makeForm = () => {
+    const form = new FormData();
+    form.append("file", blob, "page" + (blob.type === "image/png" ? ".png" : ".jpg"));
+    form.append("lang", state.lang);
+    form.append("modality", state.modality);
+    form.append("mode", $("#cropped").checked ? "table" : "auto");
+    return form;
+  };
   const headers = {};
   if (CONFIG.apiKey) headers.Authorization = `Bearer ${CONFIG.apiKey}`;
-  const t = withTimeout(signal);
-  let res;
-  try {
-    res = await fetch(CONFIG.tableUrl, { method: "POST", body: form, headers, signal: t.signal });
-  } catch (e) {
-    if (signal?.aborted) throw e;
-    if (e.name === "AbortError" || e.name === "TimeoutError") throw new Error("The table took too long. Try a cropped image of just the table.");
-    throw unreachable(CONFIG.tableUrl);
-  } finally { t.done(); }
+  const res = await postWithRetry(CONFIG.tableUrl, () => ({ method: "POST", body: makeForm(), headers }), signal,
+    "The table took too long. Try a cropped image of just the table.");
   const text = await res.text();
   if (res.status === 422) {
     let msg = text;
